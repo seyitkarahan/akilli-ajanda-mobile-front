@@ -1,0 +1,92 @@
+import 'package:akilli_ajanda_front/model/importance_level.dart';
+import 'package:flutter/material.dart';
+import '../model/category_response.dart';
+import '../model/task_response.dart';
+import '../service/api_service.dart';
+
+class HomeViewModel extends ChangeNotifier {
+  final ApiService _apiService = ApiService();
+
+  List<CategoryResponse> _categories = [];
+  List<TaskResponse> _tasks = [];
+  bool _isLoading = false;
+  int? _selectedCategoryId;
+
+  List<CategoryResponse> get categories => _categories;
+  List<TaskResponse> get tasks => _tasks;
+  bool get isLoading => _isLoading;
+  int? get selectedCategoryId => _selectedCategoryId;
+
+  HomeViewModel() {
+    fetchInitialData();
+  }
+
+  Future<void> fetchInitialData() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final results = await Future.wait([
+        _apiService.getCategories(),
+        _apiService.getTasks(), // Initially load all tasks
+      ]);
+      _categories = results[0] as List<CategoryResponse>;
+      _tasks = results[1] as List<TaskResponse>;
+    } catch (e) {
+      print('Error fetching initial data: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> selectCategory(int? categoryId) async {
+    if (_selectedCategoryId == categoryId) {
+      _selectedCategoryId = null;
+    } else {
+      _selectedCategoryId = categoryId;
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _tasks = await _apiService.getTasks(categoryId: _selectedCategoryId);
+    } catch (e) {
+      print('Error fetching tasks for category: $e');
+      _tasks = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> addCategory(String name) async {
+    try {
+      final newCategory = await _apiService.addCategory(name);
+      if (newCategory != null) {
+        _categories.add(newCategory);
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error adding category: $e');
+    }
+  }
+
+  Future<bool> addTask(String title, String description, int categoryId, ImportanceLevel importanceLevel) async {
+    try {
+      final newTask = await _apiService.addTask(title, description, categoryId, importanceLevel);
+      if (newTask != null) {
+        if (_selectedCategoryId == null || newTask.categoryId == _selectedCategoryId) {
+          _tasks.insert(0, newTask);
+        }
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error adding task: $e');
+      return false;
+    }
+  }
+}

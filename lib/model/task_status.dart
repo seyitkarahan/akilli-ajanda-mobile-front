@@ -1,0 +1,7 @@
+enum TaskStatus {
+  PENDING,
+  COMPLETED,
+  MISSED,
+  CANCELLED,
+  IN_PROGRESS
+}
