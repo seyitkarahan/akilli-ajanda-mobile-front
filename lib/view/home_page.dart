@@ -7,7 +7,7 @@ import 'package:akilli_ajanda_front/view/login_view.dart';
 import 'package:akilli_ajanda_front/view/settings_view.dart';
 import 'package:akilli_ajanda_front/view/tasks_view.dart';
 import 'package:akilli_ajanda_front/widgets/custom_button.dart';
-import 'package:akilli_ajanda_front/widgets/custom_gtextfield.dart';
+import 'package:akilli_ajanda_front/widgets/custom_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_model/home_view_model.dart';
