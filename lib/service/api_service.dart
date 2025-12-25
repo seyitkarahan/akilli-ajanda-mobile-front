@@ -7,6 +7,8 @@ import '../model/auth/login_request.dart';
 import '../model/auth/auth_response.dart';
 import '../model/category_request.dart';
 import '../model/category_response.dart';
+import '../model/event_request.dart';
+import '../model/event_response.dart';
 import '../model/user_settings_request.dart';
 import '../model/user_settings_response.dart';
 import '../model/task_request.dart';
@@ -191,6 +193,45 @@ class ApiService {
     final response = await http.delete(Uri.parse('$_baseUrl/tasks/$id'), headers: await _getHeaders());
     if (response.statusCode != 204) {
       print('Delete Task failed: ${response.body}');
+    }
+  }
+
+  // --- Events ---
+  Future<List<EventResponse>> getEvents() async {
+    final response = await http.get(Uri.parse('$_baseUrl/events'), headers: await _getHeaders());
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+      return data.map((json) => EventResponse.fromJson(json)).toList();
+    } else {
+      print('Get Events failed: ${response.body}');
+      return [];
+    }
+  }
+
+  Future<EventResponse?> createEvent(EventRequest request) async {
+    final response = await http.post(Uri.parse('$_baseUrl/events'), headers: await _getHeaders(), body: jsonEncode(request.toJson()));
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return EventResponse.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
+    } else {
+      print('Create Event failed: ${response.body}');
+      return null;
+    }
+  }
+
+  Future<EventResponse?> updateEvent(int id, EventRequest request) async {
+    final response = await http.put(Uri.parse('$_baseUrl/events/$id'), headers: await _getHeaders(), body: jsonEncode(request.toJson()));
+    if (response.statusCode == 200) {
+      return EventResponse.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
+    } else {
+      print('Update Event failed: ${response.body}');
+      return null;
+    }
+  }
+
+  Future<void> deleteEvent(int id) async {
+    final response = await http.delete(Uri.parse('$_baseUrl/events/$id'), headers: await _getHeaders());
+    if (response.statusCode != 204) {
+      print('Delete Event failed: ${response.body}');
     }
   }
 }
