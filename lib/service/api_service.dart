@@ -154,13 +154,15 @@ class ApiService {
     }
   }
 
-  Future<TaskResponse?> addTask(String title, String description, int categoryId, ImportanceLevel importanceLevel) async {
+  Future<TaskResponse?> addTask(String title, String description, int categoryId, ImportanceLevel importanceLevel, DateTime? startTime, DateTime? endTime) async {
     final request = TaskRequest(
       title: title,
       description: description,
       categoryId: categoryId,
       status: TaskStatus.PENDING,
       importanceLevel: importanceLevel,
+      startTime: startTime,
+      endTime: endTime,
     );
     return await createTask(request);
   }

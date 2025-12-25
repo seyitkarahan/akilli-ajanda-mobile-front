@@ -73,9 +73,9 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> addTask(String title, String description, int categoryId, ImportanceLevel importanceLevel) async {
+  Future<bool> addTask(String title, String description, int categoryId, ImportanceLevel importanceLevel, DateTime? startTime, DateTime? endTime) async {
     try {
-      final newTask = await _apiService.addTask(title, description, categoryId, importanceLevel);
+      final newTask = await _apiService.addTask(title, description, categoryId, importanceLevel, startTime, endTime);
       if (newTask != null) {
         if (_selectedCategoryId == null || newTask.categoryId == _selectedCategoryId) {
           _tasks.insert(0, newTask);

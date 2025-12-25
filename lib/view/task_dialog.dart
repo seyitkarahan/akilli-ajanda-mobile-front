@@ -12,19 +12,21 @@ import 'dart:ui';
 
 class TaskDialog extends StatelessWidget {
   final TaskResponse? task;
+  final DateTime? selectedDate;
 
-  const TaskDialog({super.key, this.task});
+  const TaskDialog({super.key, this.task, this.selectedDate});
 
   @override
   Widget build(BuildContext context) {
-    return _TaskDialogContent(task: task);
+    return _TaskDialogContent(task: task, selectedDate: selectedDate);
   }
 }
 
 class _TaskDialogContent extends StatefulWidget {
   final TaskResponse? task;
+  final DateTime? selectedDate;
 
-  const _TaskDialogContent({this.task});
+  const _TaskDialogContent({this.task, this.selectedDate});
 
   @override
   State<_TaskDialogContent> createState() => _TaskDialogContentState();
@@ -49,8 +51,8 @@ class _TaskDialogContentState extends State<_TaskDialogContent> {
     _status = widget.task?.status ?? TaskStatus.PENDING;
     _importanceLevel = widget.task?.importanceLevel ?? ImportanceLevel.MEDIUM;
     _categoryId = widget.task?.categoryId;
-    _startTime = widget.task?.startTime ?? DateTime.now();
-    _endTime = widget.task?.endTime ?? DateTime.now().add(const Duration(hours: 1));
+    _startTime = widget.task?.startTime ?? widget.selectedDate ?? DateTime.now();
+    _endTime = widget.task?.endTime ?? (widget.selectedDate ?? DateTime.now()).add(const Duration(hours: 1));
     _fetchCategories();
   }
 

@@ -1,20 +1,41 @@
 import 'package:akilli_ajanda_front/model/category_response.dart';
-import 'package:akilli_ajanda_front/model/importance_level.dart';
-import 'package:akilli_ajanda_front/model/task_status.dart';
+import 'package:akilli_ajanda_front/model/task_request.dart';
+import 'package:akilli_ajanda_front/model/task_response.dart';
 import 'package:akilli_ajanda_front/service/storage_service.dart';
 import 'package:akilli_ajanda_front/view/categories_view.dart';
 import 'package:akilli_ajanda_front/view/login_view.dart';
 import 'package:akilli_ajanda_front/view/settings_view.dart';
+import 'package:akilli_ajanda_front/view/task_dialog.dart';
 import 'package:akilli_ajanda_front/view/tasks_view.dart';
-import 'package:akilli_ajanda_front/widgets/custom_button.dart';
-import 'package:akilli_ajanda_front/widgets/custom_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_model/home_view_model.dart';
 import 'dart:ui';
+import 'package:syncfusion_flutter_calendar/calendar.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late HomeViewModel _viewModel;
+  late CalendarController _calendarController;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = HomeViewModel()..fetchInitialData();
+    _calendarController = CalendarController();
+  }
+
+  @override
+  void dispose() {
+    _calendarController.dispose();
+    super.dispose();
+  }
 
   void logout(BuildContext context) async {
     await StorageService().removeToken();
@@ -24,12 +45,15 @@ class HomePage extends StatelessWidget {
           (route) => false,
     );
   }
+
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => HomeViewModel()..fetchInitialData(),
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
       child: Consumer<HomeViewModel>(
         builder: (context, viewModel, child) {
+          final _TaskDataSource dataSource = _TaskDataSource(viewModel.tasks, viewModel.categories);
+
           return Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(
@@ -39,6 +63,23 @@ class HomePage extends StatelessWidget {
               titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
               iconTheme: const IconThemeData(color: Colors.white), // For Drawer icon
               actions: [
+                IconButton(
+                  icon: Icon(
+                    _calendarController.view == CalendarView.schedule
+                        ? Icons.calendar_month_outlined
+                        : Icons.view_agenda_outlined,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      if (_calendarController.view == CalendarView.schedule) {
+                        _calendarController.view = CalendarView.month;
+                      } else {
+                        _calendarController.view = CalendarView.schedule;
+                      }
+                    });
+                  },
+                ),
                 IconButton(
                   icon: const Icon(Icons.logout, color: Colors.white),
                   onPressed: () => _showLogoutConfirmationDialog(context),
@@ -149,82 +190,95 @@ class HomePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      child: Text(
-                        'Kategoriler',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 120,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                        scrollDirection: Axis.horizontal,
-                        itemCount: viewModel.categories.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            return _buildCategoryCard(context, null, 'Tümü', viewModel);
-                          }
-                          final category = viewModel.categories[index - 1];
-                          return _buildCategoryCard(context, category.id, category.name, viewModel);
-                        },
-                      ),
-                    ),
-                    const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                       child: Text(
-                        'Görevler',
+                        'Takvim',
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
-                    if (viewModel.isLoading)
-                      const Expanded(
-                        child: Center(child: CircularProgressIndicator(color: Colors.white)),
-                      )
-                    else
-                      Expanded(
-                        child: Builder(builder: (context) {
-                          // Seçili kategoriye göre filtreleme yapılır.
-                          final filteredTasks = viewModel.selectedCategoryId == null
-                              ? viewModel.tasks
-                              : viewModel.tasks.where((t) => t.categoryId == viewModel.selectedCategoryId).toList();
-
-                          if (filteredTasks.isEmpty) {
-                            return Center(
-                                child: Text('Bu kategoride görev bulunmuyor.',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70)));
-                          }
-
-                          return ListView.builder(
-                            itemCount: filteredTasks.length,
-                            itemBuilder: (context, index) {
-                              final task = filteredTasks[index];
-                              return Card(
-                                elevation: 2,
-                                color: Colors.white.withOpacity(0.2),
-                                margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                child: ListTile(
-                                  title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-                                  subtitle: task.description != null && task.description!.isNotEmpty
-                                      ? Text(
-                                    task.description!,
-                                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
-                                  )
-                                      : null,
-                                  trailing: Checkbox(
-                                    value: task.status == TaskStatus.COMPLETED,
-                                    onChanged: (bool? value) {
-                                    },
-                                    activeColor: Colors.white,
-                                    checkColor: Colors.deepPurple,
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        }),
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: SfCalendar(
+                          controller: _calendarController,
+                          dataSource: dataSource,
+                          backgroundColor: Colors.transparent,
+                          headerStyle: const CalendarHeaderStyle(
+                            textStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+                            backgroundColor: Colors.transparent,
+                          ),
+                          viewHeaderStyle: const ViewHeaderStyle(
+                            dayTextStyle: TextStyle(color: Colors.black, fontSize: 14),
+                            dateTextStyle: TextStyle(color: Colors.black, fontSize: 14),
+                          ),
+                          monthViewSettings: const MonthViewSettings(
+                            appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+                            showAgenda: true,
+                            monthCellStyle: MonthCellStyle(
+                              textStyle: TextStyle(color: Colors.black),
+                              trailingDatesTextStyle: TextStyle(color: Colors.grey),
+                              leadingDatesTextStyle: TextStyle(color: Colors.grey),
+                              todayTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              todayBackgroundColor: Colors.blue,
+                              backgroundColor: Colors.transparent,
+                            ),
+                          ),
+                          scheduleViewSettings: const ScheduleViewSettings(
+                            appointmentItemHeight: 70,
+                            monthHeaderSettings: MonthHeaderSettings(
+                              height: 100,
+                              textAlign: TextAlign.left,
+                              backgroundColor: Colors.transparent,
+                              monthFormat: 'MMMM, yyyy',
+                              monthTextStyle: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            weekHeaderSettings: WeekHeaderSettings(
+                              weekTextStyle: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            dayHeaderSettings: DayHeaderSettings(
+                              dayFormat: 'EEEE',
+                              width: 70,
+                              dayTextStyle: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w300,
+                                  color: Colors.black),
+                              dateTextStyle: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w300,
+                                  color: Colors.black),
+                            ),
+                          ),
+                          selectionDecoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.3),
+                            border: Border.all(color: Colors.blue, width: 2),
+                            borderRadius: const BorderRadius.all(Radius.circular(50)),
+                            shape: BoxShape.rectangle,
+                          ),
+                          todayHighlightColor: Colors.blue,
+                          onTap: (CalendarTapDetails details) {
+                            if (details.targetElement == CalendarElement.calendarCell) {
+                              if (viewModel.categories.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
+                                );
+                              } else {
+                                _showAddTaskDialog(context, viewModel, details.date);
+                              }
+                            }
+                          },
+                        ),
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -236,7 +290,7 @@ class HomePage extends StatelessWidget {
                     const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
                   );
                 } else {
-                  _showAddTaskDialog(context, viewModel);
+                  _showAddTaskDialog(context, viewModel, null);
                 }
               },
               backgroundColor: viewModel.categories.isEmpty ? Colors.grey : Colors.white,
@@ -279,178 +333,70 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryCard(BuildContext context, int? categoryId, String name, HomeViewModel viewModel) {
-    final bool isSelected = viewModel.selectedCategoryId == categoryId;
-    return GestureDetector(
-      onTap: () => viewModel.selectCategory(categoryId),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: 130,
-        margin: const EdgeInsets.symmetric(horizontal: 4.0),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isSelected
-                ? [Colors.white, Colors.white.withOpacity(0.9)]
-                : [Colors.white.withOpacity(0.2), Colors.white.withOpacity(0.1)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(
-            color: isSelected ? Colors.deepPurple.shade300 : Colors.transparent,
-            width: 2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected ? Colors.deepPurple.withOpacity(0.3) : Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              name,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: isSelected ? Colors.deepPurple.shade700 : Colors.white,
-                fontFamily: 'Montserrat',
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showAddTaskDialog(BuildContext context, HomeViewModel viewModel) {
-    final titleController = TextEditingController();
-    final descriptionController = TextEditingController();
-    ImportanceLevel selectedImportanceLevel = ImportanceLevel.MEDIUM;
-    int? selectedCategoryId = viewModel.selectedCategoryId;
-
-    showDialog(
+  void _showAddTaskDialog(BuildContext context, HomeViewModel viewModel, DateTime? selectedDate) async {
+    final request = await showDialog<TaskRequest>(
       context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-          backgroundColor: Colors.deepPurple.shade300.withOpacity(0.9),
-          title: const Text('Yeni Görev Ekle', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          content: StatefulBuilder(builder: (context, setState) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CustomTextField(
-                  controller: titleController,
-                  labelText: 'Başlık',
-                  icon: Icons.title,
-                ),
-                const SizedBox(height: 20),
-                CustomTextField(
-                  controller: descriptionController,
-                  labelText: 'Açıklama',
-                  icon: Icons.description,
-                ),
-                const SizedBox(height: 20),
-                DropdownButtonFormField<int>(
-                  value: selectedCategoryId,
-                  items: viewModel.categories.map((CategoryResponse category) {
-                    return DropdownMenuItem<int>(
-                      value: category.id,
-                      child: Text(category.name, style: const TextStyle(color: Colors.black)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedCategoryId = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Kategori',
-                    labelStyle: const TextStyle(color: Colors.white70),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
-                  ),
-                  dropdownColor: Colors.deepPurple.shade200,
-                  style: const TextStyle(color: Colors.white),
-                ),
-                const SizedBox(height: 20),
-                DropdownButtonFormField<ImportanceLevel>(
-                  value: selectedImportanceLevel,
-                  items: ImportanceLevel.values.map((level) {
-                    return DropdownMenuItem<ImportanceLevel>(
-                      value: level,
-                      child: Text(level.toString().split('.').last, style: const TextStyle(color: Colors.black)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        selectedImportanceLevel = value;
-                      });
-                    }
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Önem Seviyesi',
-                    labelStyle: const TextStyle(color: Colors.white70),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
-                  ),
-                  dropdownColor: Colors.deepPurple.shade200,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ],
-            );
-          }),
-          actions: [
-            TextButton(
-              child: const Text('İptal', style: TextStyle(color: Colors.white70)),
-              onPressed: () => Navigator.of(dialogContext).pop(),
-            ),
-            SizedBox(
-              width: 120,
-              child: CustomButton(
-                onPressed: () async {
-                  final title = titleController.text;
-                  final description = descriptionController.text;
-                  if (title.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Lütfen bir başlık girin.')),
-                    );
-                    return;
-                  }
-                  if (selectedCategoryId == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Lütfen bir kategori seçin.')),
-                    );
-                    return;
-                  }
-
-                  final success = await viewModel.addTask(title, description, selectedCategoryId!, selectedImportanceLevel);
-                  Navigator.of(dialogContext).pop();
-
-                  if (success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Görev başarıyla eklendi.'), backgroundColor: Colors.green),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Görev eklenirken bir hata oluştu.'), backgroundColor: Colors.red),
-                    );
-                  }
-                },
-                text: 'Ekle',
-              ),
-            )
-          ],
-        );
-      },
+      builder: (_) => TaskDialog(selectedDate: selectedDate),
     );
+
+    if (request != null) {
+      if (request.categoryId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Lütfen bir kategori seçin.')),
+        );
+        return;
+      }
+
+      final success = await viewModel.addTask(
+        request.title,
+        request.description ?? '',
+        request.categoryId!,
+        request.importanceLevel,
+        request.startTime,
+        request.endTime,
+      );
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Görev başarıyla eklendi.'), backgroundColor: Colors.green),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Görev eklenirken bir hata oluştu.'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+}
+
+class _TaskDataSource extends CalendarDataSource {
+  _TaskDataSource(List<TaskResponse> tasks, List<CategoryResponse> categories) {
+    final List<Color> colorPalette = [
+      Colors.blue,
+      Colors.green,
+      Colors.red,
+      Colors.orange,
+      Colors.purple,
+      Colors.brown,
+      Colors.teal,
+      Colors.pink,
+    ];
+
+    appointments = tasks.map((task) {
+      int categoryIndex = categories.indexWhere((c) => c.id == task.categoryId);
+      Color appointmentColor = categoryIndex != -1 ? colorPalette[categoryIndex % colorPalette.length] : Colors.grey;
+
+      if (task.startTime == null) {
+        return null;
+      }
+
+      return Appointment(
+        startTime: task.startTime!,
+        endTime: task.endTime ?? task.startTime!.add(const Duration(hours: 1)),
+        subject: task.title,
+        notes: task.description ?? '',
+        color: appointmentColor,
+      );
+    }).whereType<Appointment>().toList();
   }
 }
