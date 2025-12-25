@@ -1,14 +1,18 @@
 import 'package:akilli_ajanda_front/model/category_response.dart';
+import 'package:akilli_ajanda_front/model/event_request.dart';
+import 'package:akilli_ajanda_front/model/event_response.dart';
 import 'package:akilli_ajanda_front/model/task_request.dart';
 import 'package:akilli_ajanda_front/model/task_response.dart';
 import 'package:akilli_ajanda_front/service/storage_service.dart';
 import 'package:akilli_ajanda_front/view/categories_view.dart';
+import 'package:akilli_ajanda_front/view/event_dialog.dart';
 import 'package:akilli_ajanda_front/view/events_view.dart';
 import 'package:akilli_ajanda_front/view/login_view.dart';
 import 'package:akilli_ajanda_front/view/settings_view.dart';
 import 'package:akilli_ajanda_front/view/task_dialog.dart';
 import 'package:akilli_ajanda_front/view/tasks_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:provider/provider.dart';
 import '../view_model/home_view_model.dart';
 import 'dart:ui';
@@ -53,7 +57,7 @@ class _HomePageState extends State<HomePage> {
       value: _viewModel,
       child: Consumer<HomeViewModel>(
         builder: (context, viewModel, child) {
-          final _TaskDataSource dataSource = _TaskDataSource(viewModel.tasks, viewModel.categories);
+          final _AppointmentDataSource dataSource = _AppointmentDataSource(viewModel.tasks, viewModel.events, viewModel.categories);
 
           return Scaffold(
             extendBodyBehindAppBar: true,
@@ -284,7 +288,7 @@ class _HomePageState extends State<HomePage> {
                                   const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
                                 );
                               } else {
-                                _showAddTaskDialog(context, viewModel, details.date);
+                                _showAddDialog(context, viewModel, details.date);
                               }
                             }
                           },
@@ -295,22 +299,83 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                if (viewModel.categories.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
-                  );
-                } else {
-                  _showAddTaskDialog(context, viewModel, null);
-                }
-              },
-              backgroundColor: viewModel.categories.isEmpty ? Colors.grey : Colors.white,
-              child: Icon(Icons.add, color: Colors.deepPurple.shade300),
+            floatingActionButton: SpeedDial(
+              icon: Icons.add,
+              activeIcon: Icons.close,
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.deepPurple.shade300,
+              overlayColor: Colors.black,
+              overlayOpacity: 0.5,
+              children: [
+                SpeedDialChild(
+                  child: const Icon(Icons.task, color: Colors.white),
+                  backgroundColor: Colors.blue.shade400,
+                  label: 'Görev Ekle',
+                  labelStyle: const TextStyle(fontSize: 16),
+                  onTap: () {
+                    if (viewModel.categories.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
+                      );
+                    } else {
+                      _showAddTaskDialog(context, viewModel, null);
+                    }
+                  },
+                ),
+                SpeedDialChild(
+                  child: const Icon(Icons.event, color: Colors.white),
+                  backgroundColor: Colors.deepPurple.shade300,
+                  label: 'Etkinlik Ekle',
+                  labelStyle: const TextStyle(fontSize: 16),
+                  onTap: () {
+                     if (viewModel.categories.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
+                      );
+                    } else {
+                      _showAddEventDialog(context, viewModel, null);
+                    }
+                  },
+                ),
+              ],
             ),
           );
         },
       ),
+    );
+  }
+
+  void _showAddDialog(BuildContext context, HomeViewModel viewModel, DateTime? selectedDate) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+          backgroundColor: Colors.deepPurple.shade300.withOpacity(0.9),
+          title: const Text('Ne eklemek istersiniz?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.task, color: Colors.white),
+                title: const Text('Görev', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  _showAddTaskDialog(context, viewModel, selectedDate);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.event, color: Colors.white),
+                title: const Text('Etkinlik', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  _showAddEventDialog(context, viewModel, selectedDate);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -379,10 +444,31 @@ class _HomePageState extends State<HomePage> {
       }
     }
   }
+  
+  void _showAddEventDialog(BuildContext context, HomeViewModel viewModel, DateTime? selectedDate) async {
+    final request = await showDialog<EventRequest>(
+      context: context,
+      builder: (_) => EventDialog(selectedDate: selectedDate),
+    );
+
+    if (request != null) {
+      final success = await viewModel.addEvent(request);
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Etkinlik başarıyla eklendi.'), backgroundColor: Colors.green),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Etkinlik eklenirken bir hata oluştu.'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
 }
 
-class _TaskDataSource extends CalendarDataSource {
-  _TaskDataSource(List<TaskResponse> tasks, List<CategoryResponse> categories) {
+class _AppointmentDataSource extends CalendarDataSource {
+  _AppointmentDataSource(List<TaskResponse> tasks, List<EventResponse> events, List<CategoryResponse> categories) {
     final List<Color> colorPalette = [
       Colors.blue,
       Colors.green,
@@ -394,21 +480,37 @@ class _TaskDataSource extends CalendarDataSource {
       Colors.pink,
     ];
 
-    appointments = tasks.map((task) {
+    List<Appointment> appointments = [];
+
+    for (var task in tasks) {
       int categoryIndex = categories.indexWhere((c) => c.id == task.categoryId);
       Color appointmentColor = categoryIndex != -1 ? colorPalette[categoryIndex % colorPalette.length] : Colors.grey;
 
-      if (task.startTime == null) {
-        return null;
+      if (task.startTime != null) {
+        appointments.add(Appointment(
+          startTime: task.startTime!,
+          endTime: task.endTime ?? task.startTime!.add(const Duration(hours: 1)),
+          subject: task.title,
+          notes: task.description ?? '',
+          color: appointmentColor,
+        ));
       }
+    }
 
-      return Appointment(
-        startTime: task.startTime!,
-        endTime: task.endTime ?? task.startTime!.add(const Duration(hours: 1)),
-        subject: task.title,
-        notes: task.description ?? '',
-        color: appointmentColor,
-      );
-    }).whereType<Appointment>().toList();
+    for (var event in events) {
+       int categoryIndex = categories.indexWhere((c) => c.id == event.categoryId);
+      Color appointmentColor = categoryIndex != -1 ? colorPalette[categoryIndex % colorPalette.length] : Colors.grey;
+
+      appointments.add(Appointment(
+        startTime: event.startTime,
+        endTime: event.endTime,
+        subject: event.title,
+        notes: event.description,
+        color: appointmentColor.withAlpha(150),
+        isAllDay: false,
+      ));
+    }
+
+    this.appointments = appointments;
   }
 }

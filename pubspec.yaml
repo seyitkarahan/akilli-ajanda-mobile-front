@@ -15,6 +15,7 @@ dependencies:
   http: ^1.6.0
   flutter_local_notifications: ^19.5.0
   syncfusion_flutter_calendar: ^31.2.18
+  flutter_speed_dial: ^7.0.0
 
 dev_dependencies:
   flutter_test:

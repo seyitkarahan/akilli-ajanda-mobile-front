@@ -1,3 +1,5 @@
+import 'package:akilli_ajanda_front/model/event_request.dart';
+import 'package:akilli_ajanda_front/model/event_response.dart';
 import 'package:akilli_ajanda_front/model/importance_level.dart';
 import 'package:flutter/material.dart';
 import '../model/category_response.dart';
@@ -9,11 +11,13 @@ class HomeViewModel extends ChangeNotifier {
 
   List<CategoryResponse> _categories = [];
   List<TaskResponse> _tasks = [];
+  List<EventResponse> _events = [];
   bool _isLoading = false;
   int? _selectedCategoryId;
 
   List<CategoryResponse> get categories => _categories;
   List<TaskResponse> get tasks => _tasks;
+  List<EventResponse> get events => _events;
   bool get isLoading => _isLoading;
   int? get selectedCategoryId => _selectedCategoryId;
 
@@ -29,9 +33,11 @@ class HomeViewModel extends ChangeNotifier {
       final results = await Future.wait([
         _apiService.getCategories(),
         _apiService.getTasks(), // Initially load all tasks
+        _apiService.getEvents(),
       ]);
       _categories = results[0] as List<CategoryResponse>;
       _tasks = results[1] as List<TaskResponse>;
+      _events = results[2] as List<EventResponse>;
     } catch (e) {
       print('Error fetching initial data: $e');
     } finally {
@@ -52,9 +58,11 @@ class HomeViewModel extends ChangeNotifier {
 
     try {
       _tasks = await _apiService.getTasks(categoryId: _selectedCategoryId);
+      _events = await _apiService.getEvents(categoryId: _selectedCategoryId);
     } catch (e) {
       print('Error fetching tasks for category: $e');
       _tasks = [];
+      _events = [];
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -86,6 +94,23 @@ class HomeViewModel extends ChangeNotifier {
       return false;
     } catch (e) {
       print('Error adding task: $e');
+      return false;
+    }
+  }
+
+  Future<bool> addEvent(EventRequest request) async {
+    try {
+      final newEvent = await _apiService.createEvent(request);
+      if (newEvent != null) {
+        if (_selectedCategoryId == null || newEvent.categoryId == _selectedCategoryId) {
+          _events.insert(0, newEvent);
+        }
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error adding event: $e');
       return false;
     }
   }

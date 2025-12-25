@@ -197,8 +197,12 @@ class ApiService {
   }
 
   // --- Events ---
-  Future<List<EventResponse>> getEvents() async {
-    final response = await http.get(Uri.parse('$_baseUrl/events'), headers: await _getHeaders());
+  Future<List<EventResponse>> getEvents({int? categoryId}) async {
+    String url = '$_baseUrl/events';
+    if (categoryId != null) {
+      url += '?categoryId=$categoryId';
+    }
+    final response = await http.get(Uri.parse(url), headers: await _getHeaders());
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
       return data.map((json) => EventResponse.fromJson(json)).toList();

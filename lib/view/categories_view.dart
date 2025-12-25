@@ -1,4 +1,5 @@
 import 'package:akilli_ajanda_front/model/category_request.dart';
+import 'package:akilli_ajanda_front/view/category_detail_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../view_model/category_view_model.dart';
@@ -43,6 +44,14 @@ class CategoriesView extends StatelessWidget {
                       child: ListTile(
                         leading: const Icon(Icons.label_outline, color: Colors.white),
                         title: Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CategoryDetailView(category: category),
+                            ),
+                          );
+                        },
                         trailing: PopupMenuButton<String>(
                           onSelected: (value) {
                             if (value == 'edit') {
