@@ -28,7 +28,7 @@ class RegisterView extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.person_add_alt_1_outlined, size: 80, color: Colors.white.withOpacity(0.9)),
+                      Icon(Icons.app_registration, size: 80, color: Colors.white.withOpacity(0.9)),
                       const SizedBox(height: 20),
                       const Text(
                         "Hesap Oluştur",

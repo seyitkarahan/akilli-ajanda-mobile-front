@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CustomTextField extends StatelessWidget {
+class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
   final String labelText;
   final bool obscureText;
@@ -15,15 +15,41 @@ class CustomTextField extends StatelessWidget {
   });
 
   @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  late bool _isObscured;
+
+  @override
+  void initState() {
+    super.initState();
+    _isObscured = widget.obscureText;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: controller,
-      obscureText: obscureText,
+      controller: widget.controller,
+      obscureText: _isObscured,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
-        labelText: labelText,
+        labelText: widget.labelText,
         labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-        prefixIcon: icon != null ? Icon(icon, color: Colors.white, size: 22) : null,
+        prefixIcon: widget.icon != null ? Icon(widget.icon, color: Colors.white, size: 22) : null,
+        suffixIcon: widget.obscureText
+            ? IconButton(
+                icon: Icon(
+                  _isObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isObscured = !_isObscured;
+                  });
+                },
+              )
+            : null,
         filled: true,
         fillColor: Colors.white.withOpacity(0.2),
         enabledBorder: OutlineInputBorder(
