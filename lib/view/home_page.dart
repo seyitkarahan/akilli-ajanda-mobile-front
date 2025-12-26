@@ -1,3 +1,4 @@
+
 import 'package:akilli_ajanda_front/model/category_response.dart';
 import 'package:akilli_ajanda_front/model/event_request.dart';
 import 'package:akilli_ajanda_front/model/event_response.dart';
@@ -7,7 +8,9 @@ import 'package:akilli_ajanda_front/service/storage_service.dart';
 import 'package:akilli_ajanda_front/view/categories_view.dart';
 import 'package:akilli_ajanda_front/view/event_dialog.dart';
 import 'package:akilli_ajanda_front/view/events_view.dart';
+import 'package:akilli_ajanda_front/view/image_upload_view.dart';
 import 'package:akilli_ajanda_front/view/login_view.dart';
+import 'package:akilli_ajanda_front/view/my_images_view.dart';
 import 'package:akilli_ajanda_front/view/settings_view.dart';
 import 'package:akilli_ajanda_front/view/task_dialog.dart';
 import 'package:akilli_ajanda_front/view/tasks_view.dart';
@@ -169,6 +172,28 @@ class _HomePageState extends State<HomePage> {
                                     context,
                                     MaterialPageRoute(builder: (_) => const EventsView()),
                                   ).then((_) => viewModel.fetchInitialData());
+                                },
+                              ),
+                              ListTile(
+                                leading: Icon(Icons.image, color: Colors.deepPurple.shade600),
+                                title: Text('Resim Yükle', style: TextStyle(color: Colors.black87)),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const ImageUploadView()),
+                                  );
+                                },
+                              ),
+                               ListTile(
+                                leading: Icon(Icons.photo_library, color: Colors.deepPurple.shade600),
+                                title: Text('Resimlerim', style: TextStyle(color: Colors.black87)),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const MyImagesView()),
+                                  );
                                 },
                               ),
                               const Divider(),
@@ -387,7 +412,7 @@ class _HomePageState extends State<HomePage> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
           backgroundColor: Colors.deepPurple.shade300.withOpacity(0.9),
           title: const Text('Çıkış Yap', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          content: const Text('Çıkış yapmak istediğinizden emin misiniz?', style: TextStyle(color: Colors.white)),
+          content: const Text('Çıkış yapmak istediğinizden emin misiniz?', style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),

@@ -4,6 +4,9 @@
     <!-- Needed for Android 13+ to post notifications -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+
     <application
         android:label="akilli_ajanda_front"
         android:name="${applicationName}"
