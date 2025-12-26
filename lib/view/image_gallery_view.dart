@@ -1,8 +1,8 @@
-
 import 'dart:io';
 import 'package:akilli_ajanda_front/view/image_detail_view.dart';
 import 'package:akilli_ajanda_front/view_model/image_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class ImageGalleryView extends StatelessWidget {
@@ -69,9 +69,9 @@ class ImageGalleryView extends StatelessWidget {
             )
           else
             ElevatedButton.icon(
-              onPressed: viewModel.pickImage,
-              icon: const Icon(Icons.photo_library),
-              label: const Text('Galeriden Resim Seç'),
+              onPressed: () => _showImageSourceDialog(context, viewModel),
+              icon: const Icon(Icons.add_a_photo),
+              label: const Text('Resim Ekle'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.deepPurple.shade300,
@@ -108,6 +108,40 @@ class ImageGalleryView extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+
+  void _showImageSourceDialog(BuildContext context, ImageViewModel viewModel) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+          backgroundColor: Colors.deepPurple.shade300.withOpacity(0.9),
+          title: const Text('Resim Kaynağını Seçin', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Colors.white),
+                title: const Text('Galeriden Seç', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  viewModel.pickImage(ImageSource.gallery);
+                  Navigator.pop(dialogContext);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Colors.white),
+                title: const Text('Kameradan Çek', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  viewModel.pickImage(ImageSource.camera);
+                  Navigator.pop(dialogContext);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

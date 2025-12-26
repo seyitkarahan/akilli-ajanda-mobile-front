@@ -24,9 +24,9 @@ class ImageViewModel extends ChangeNotifier {
     await fetchMyImages();
   }
 
-  Future<void> pickImage() async {
+  Future<void> pickImage(ImageSource source) async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await picker.pickImage(source: source);
     if (pickedFile != null) {
       _selectedImage = File(pickedFile.path);
       notifyListeners();
