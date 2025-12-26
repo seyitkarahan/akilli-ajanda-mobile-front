@@ -20,6 +20,10 @@ class ImageViewModel extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
+  Future<void> init() async {
+    await fetchMyImages();
+  }
+
   Future<void> pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -29,22 +33,20 @@ class ImageViewModel extends ChangeNotifier {
     }
   }
 
-  Future<ImageResponse?> uploadImage({int? taskId, int? eventId}) async {
-    if (_selectedImage == null) return null;
+  Future<bool> uploadImage({int? taskId, int? eventId}) async {
+    if (_selectedImage == null) return false;
     _setLoading(true);
-    ImageResponse? response;
     try {
-      response = await _imageService.uploadImage(_selectedImage!, taskId: taskId, eventId: eventId);
+      final newImage = await _imageService.uploadImage(_selectedImage!, taskId: taskId, eventId: eventId);
+      _images.insert(0, newImage); // Add to the beginning of the list
       _selectedImage = null;
-      // After uploading, refresh the list of images
-      await fetchMyImages();
+      return true;
     } catch (e) {
       _setError(e.toString());
-      response = null;
+      return false;
     } finally {
       _setLoading(false);
     }
-    return response;
   }
 
   Future<void> fetchMyImages() async {
@@ -59,15 +61,13 @@ class ImageViewModel extends ChangeNotifier {
   }
 
   Future<void> deleteImage(int imageId) async {
-    _setLoading(true);
+    // No loading indicator for a smoother experience
     try {
       await _imageService.deleteImage(imageId);
-      // Remove the image from the local list
       _images.removeWhere((image) => image.id == imageId);
+      notifyListeners(); // Update UI immediately
     } catch (e) {
       _setError(e.toString());
-    } finally {
-      _setLoading(false);
     }
   }
 

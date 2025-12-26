@@ -8,9 +8,8 @@ import 'package:akilli_ajanda_front/service/storage_service.dart';
 import 'package:akilli_ajanda_front/view/categories_view.dart';
 import 'package:akilli_ajanda_front/view/event_dialog.dart';
 import 'package:akilli_ajanda_front/view/events_view.dart';
-import 'package:akilli_ajanda_front/view/image_upload_view.dart';
+import 'package:akilli_ajanda_front/view/image_gallery_view.dart';
 import 'package:akilli_ajanda_front/view/login_view.dart';
-import 'package:akilli_ajanda_front/view/my_images_view.dart';
 import 'package:akilli_ajanda_front/view/settings_view.dart';
 import 'package:akilli_ajanda_front/view/task_dialog.dart';
 import 'package:akilli_ajanda_front/view/tasks_view.dart';
@@ -175,24 +174,13 @@ class _HomePageState extends State<HomePage> {
                                 },
                               ),
                               ListTile(
-                                leading: Icon(Icons.image, color: Colors.deepPurple.shade600),
-                                title: Text('Resim Yükle', style: TextStyle(color: Colors.black87)),
+                                leading: Icon(Icons.photo_album, color: Colors.deepPurple.shade600),
+                                title: Text('Resim Galerisi', style: TextStyle(color: Colors.black87)),
                                 onTap: () {
                                   Navigator.pop(context);
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (_) => const ImageUploadView()),
-                                  );
-                                },
-                              ),
-                               ListTile(
-                                leading: Icon(Icons.photo_library, color: Colors.deepPurple.shade600),
-                                title: Text('Resimlerim', style: TextStyle(color: Colors.black87)),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => const MyImagesView()),
+                                    MaterialPageRoute(builder: (_) => const ImageGalleryView()),
                                   );
                                 },
                               ),
