@@ -482,46 +482,56 @@ class _HomePageState extends State<HomePage> {
 
 class _AppointmentDataSource extends CalendarDataSource {
   _AppointmentDataSource(List<TaskResponse> tasks, List<EventResponse> events, List<CategoryResponse> categories) {
-    final List<Color> colorPalette = [
-      Colors.blue,
-      Colors.green,
-      Colors.red,
-      Colors.orange,
-      Colors.purple,
-      Colors.brown,
-      Colors.teal,
-      Colors.pink,
+    final List<Color> taskColorPalette = [
+      Colors.blue.shade700,
+      Colors.red.shade700,
+      Colors.orange.shade700,
+      Colors.brown.shade700,
+      Colors.teal.shade700,
+      Colors.deepPurple.shade700,
+    ];
+
+    final List<Color> eventColorPalette = [
+      Colors.green.shade700,
+      Colors.purple.shade700,
+      Colors.pink.shade700,
+      Colors.amber.shade800,
+      Colors.cyan.shade700,
+      Colors.indigo.shade700,
     ];
 
     List<Appointment> appointments = [];
 
     for (var task in tasks) {
       int categoryIndex = categories.indexWhere((c) => c.id == task.categoryId);
-      Color appointmentColor = categoryIndex != -1 ? colorPalette[categoryIndex % colorPalette.length] : Colors.grey;
+      Color appointmentColor = categoryIndex != -1 ? taskColorPalette[categoryIndex % taskColorPalette.length] : Colors.grey;
 
       if (task.startTime != null) {
         appointments.add(Appointment(
           startTime: task.startTime!,
           endTime: task.endTime ?? task.startTime!.add(const Duration(hours: 1)),
-          subject: task.title,
+          subject: 'Görev: ${task.title}',
           notes: task.description ?? '',
           color: appointmentColor,
+          isAllDay: false,
         ));
       }
     }
 
     for (var event in events) {
-       int categoryIndex = categories.indexWhere((c) => c.id == event.categoryId);
-      Color appointmentColor = categoryIndex != -1 ? colorPalette[categoryIndex % colorPalette.length] : Colors.grey;
+      int categoryIndex = categories.indexWhere((c) => c.id == event.categoryId);
+      Color appointmentColor = categoryIndex != -1 ? eventColorPalette[categoryIndex % eventColorPalette.length] : Colors.grey.shade700;
 
-      appointments.add(Appointment(
-        startTime: event.startTime,
-        endTime: event.endTime,
-        subject: event.title,
-        notes: event.description,
-        color: appointmentColor.withAlpha(150),
-        isAllDay: false,
-      ));
+      if (event.startTime != null) {
+        appointments.add(Appointment(
+          startTime: event.startTime!,
+          endTime: event.endTime ?? event.startTime!.add(const Duration(hours: 1)),
+          subject: 'Etkinlik: ${event.title}',
+          notes: event.description ?? '',
+          color: appointmentColor,
+          isAllDay: false,
+        ));
+      }
     }
 
     this.appointments = appointments;
