@@ -16,6 +16,7 @@ import 'package:akilli_ajanda_front/view/task_dialog.dart';
 import 'package:akilli_ajanda_front/view/tasks_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../view_model/home_view_model.dart';
@@ -35,7 +36,7 @@ class _HomePageState extends State<HomePage> {
   late HomeViewModel _viewModel;
   late CalendarController _calendarController;
   _UpcomingListType _shownListType = _UpcomingListType.none;
-
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -59,159 +60,22 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Consumer<HomeViewModel>(
         builder: (context, viewModel, child) {
-          final _AppointmentDataSource dataSource = _AppointmentDataSource(viewModel.tasks, viewModel.events, viewModel.categories);
-
           return Scaffold(
             extendBodyBehindAppBar: true,
-            appBar: AppBar(
-              title: const Text('Akıllı Ajanda'),
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
-              iconTheme: const IconThemeData(color: Colors.white), // For Drawer icon
-              actions: [
-                IconButton(
-                  icon: Icon(
-                    _calendarController.view == CalendarView.schedule
-                        ? Icons.calendar_month_outlined
-                        : Icons.view_agenda_outlined,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      if (_calendarController.view == CalendarView.schedule) {
-                        _calendarController.view = CalendarView.month;
-                      } else {
-                        _calendarController.view = CalendarView.schedule;
-                      }
-                    });
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.logout, color: Colors.white),
-                  onPressed: () => _showLogoutConfirmationDialog(context),
-                )
-              ],
-            ),
-            drawer: Drawer(
-              backgroundColor: Colors.transparent,
-              child: Container(
-                color: Colors.transparent,
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 8.0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          width: 300,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.85),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.25),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: ListView(
-                            padding: EdgeInsets.zero,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Colors.deepPurple.shade300, Colors.deepPurple.shade400],
-                                  ),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.menu, color: Colors.white, size: 28),
-                                    SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        'Menü',
-                                        style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              ListTile(
-                                leading: Icon(Icons.category, color: Colors.deepPurple.shade600),
-                                title: Text('Kategoriler', style: TextStyle(color: Colors.black87)),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => const CategoriesView()),
-                                  ).then((_) => viewModel.fetchInitialData());
-                                },
-                              ),
-                              ListTile(
-                                leading: Icon(Icons.task, color: Colors.deepPurple.shade600),
-                                title: Text('Görevler', style: TextStyle(color: Colors.black87)),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => const TasksView()),
-                                  ).then((_) => viewModel.fetchInitialData());
-                                },
-                              ),
-                              ListTile(
-                                leading: Icon(Icons.event, color: Colors.deepPurple.shade600),
-                                title: Text('Etkinlikler', style: TextStyle(color: Colors.black87)),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => const EventsView()),
-                                  ).then((_) => viewModel.fetchInitialData());
-                                },
-                              ),
-                              ListTile(
-                                leading: Icon(Icons.photo_album, color: Colors.deepPurple.shade600),
-                                title: Text('Resim Galerisi', style: TextStyle(color: Colors.black87)),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => const ImageGalleryView()),
-                                  );
-                                },
-                              ),
-                              const Divider(),
-                              ListTile(
-                                leading: Icon(Icons.settings, color: Colors.deepPurple.shade600),
-                                title: Text('Ayarlar', style: TextStyle(color: Colors.black87)),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => const SettingsView()),
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 8),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            appBar: _buildAppBar(context, viewModel),
+            drawer: _buildDrawer(context, viewModel),
             body: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -221,197 +85,430 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               child: SafeArea(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                child: _buildPage(_selectedIndex, viewModel),
+              ),
+            ),
+            bottomNavigationBar: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 20,
+                    color: Colors.black.withOpacity(.1),
+                  )
+                ],
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+                  child: GNav(
+                    rippleColor: Colors.grey[300]!,
+                    hoverColor: Colors.grey[100]!,
+                    gap: 8,
+                    activeColor: Colors.white,
+                    iconSize: 24,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    duration: const Duration(milliseconds: 400),
+                    tabBackgroundColor: Colors.deepPurple.shade300,
+                    color: Colors.black,
+                    tabs: const [
+                      GButton(
+                        icon: Icons.home,
+                        text: 'Ana Sayfa',
+                      ),
+                      GButton(
+                        icon: Icons.task_alt,
+                        text: 'Görevler',
+                      ),
+                      GButton(
+                        icon: Icons.event,
+                        text: 'Etkinlikler',
+                      ),
+                      GButton(
+                        icon: Icons.settings,
+                        text: 'Ayarlar',
+                      ),
+                    ],
+                    selectedIndex: _selectedIndex,
+                    onTabChange: _onItemTapped,
+                  ),
+                ),
+              ),
+            ),
+            floatingActionButton: _buildFab(context, viewModel),
+          );
+        },
+      ),
+    );
+  }
+
+  PreferredSizeWidget? _buildAppBar(BuildContext context, HomeViewModel viewModel) {
+    if (_selectedIndex == 0) {
+      return AppBar(
+        title: const Text('Akıllı Ajanda'),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _calendarController.view == CalendarView.schedule
+                  ? Icons.calendar_month_outlined
+                  : Icons.view_agenda_outlined,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              setState(() {
+                if (_calendarController.view == CalendarView.schedule) {
+                  _calendarController.view = CalendarView.month;
+                } else {
+                  _calendarController.view = CalendarView.schedule;
+                }
+              });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: () => _showLogoutConfirmationDialog(context),
+          )
+        ],
+      );
+    } else {
+        return AppBar(
+        title: Text(['Ana Sayfa', 'Görevler', 'Etkinlikler', 'Ayarlar'][_selectedIndex]),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white), 
+      );
+    }
+  }
+
+  Widget _buildPage(int index, HomeViewModel viewModel) {
+    switch (index) {
+      case 0:
+        return _buildCalendarPage(viewModel);
+      case 1:
+        return const TasksView();
+      case 2:
+        return const EventsView();
+      case 3:
+        return const SettingsView();
+      default:
+        return Container();
+    }
+  }
+
+  Widget _buildCalendarPage(HomeViewModel viewModel) {
+    final _AppointmentDataSource dataSource = _AppointmentDataSource(viewModel.tasks, viewModel.events, viewModel.categories);
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+            child: Text(
+              'Takvim',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+          ),
+          Container(
+            height: MediaQuery.of(context).size.height * 0.6,
+            margin: const EdgeInsets.symmetric(horizontal: 16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: SfCalendar(
+              controller: _calendarController,
+              dataSource: dataSource,
+              backgroundColor: Colors.transparent,
+              headerStyle: const CalendarHeaderStyle(
+                textStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+                backgroundColor: Colors.transparent,
+              ),
+              viewHeaderStyle: const ViewHeaderStyle(
+                dayTextStyle: TextStyle(color: Colors.black, fontSize: 14),
+                dateTextStyle: TextStyle(color: Colors.black, fontSize: 14),
+              ),
+              monthViewSettings: const MonthViewSettings(
+                appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+                showAgenda: true,
+                monthCellStyle: MonthCellStyle(
+                  textStyle: TextStyle(color: Colors.black),
+                  trailingDatesTextStyle: TextStyle(color: Colors.grey),
+                  leadingDatesTextStyle: TextStyle(color: Colors.grey),
+                  todayTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  todayBackgroundColor: Colors.blue,
+                  backgroundColor: Colors.transparent,
+                ),
+              ),
+              scheduleViewSettings: const ScheduleViewSettings(
+                appointmentItemHeight: 70,
+                monthHeaderSettings: MonthHeaderSettings(
+                  height: 100,
+                  textAlign: TextAlign.left,
+                  backgroundColor: Colors.transparent,
+                  monthFormat: 'MMMM, yyyy',
+                  monthTextStyle: TextStyle(
+                      color: Colors.black,
+                      fontSize: 25,
+                      fontWeight: FontWeight.w500),
+                ),
+                weekHeaderSettings: WeekHeaderSettings(
+                  weekTextStyle: TextStyle(
+                      color: Colors.black,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500),
+                ),
+                dayHeaderSettings: DayHeaderSettings(
+                  dayFormat: 'EEEE',
+                  width: 70,
+                  dayTextStyle: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.black),
+                  dateTextStyle: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.black),
+                ),
+              ),
+              selectionDecoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.3),
+                border: Border.all(color: Colors.blue, width: 2),
+                borderRadius: const BorderRadius.all(Radius.circular(50)),
+                shape: BoxShape.rectangle,
+              ),
+              todayHighlightColor: Colors.blue,
+              onTap: (CalendarTapDetails details) {
+                if (details.targetElement == CalendarElement.calendarCell) {
+                  if (viewModel.categories.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
+                    );
+                  } else {
+                    _showAddDialog(context, viewModel, details.date);
+                  }
+                }
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.task_alt),
+                   onPressed: () {
+                    setState(() {
+                      if (_shownListType == _UpcomingListType.tasks) {
+                        _shownListType = _UpcomingListType.none;
+                      } else {
+                        _shownListType = _UpcomingListType.tasks;
+                      }
+                    });
+                  },
+                  label: const Text('Yaklaşan Görevler'),
+                  style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blue.shade400,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
+                   ),
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.event_available),
+                  onPressed: () {
+                    setState(() {
+                      if (_shownListType == _UpcomingListType.events) {
+                        _shownListType = _UpcomingListType.none;
+                      } else {
+                        _shownListType = _UpcomingListType.events;
+                      }
+                    });
+                  },
+                  label: const Text('Yaklaşan Etkinlikler'),
+                   style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.deepPurple.shade300,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
+                   ),
+                ),
+              ],
+            ),
+          ),
+           _buildUpcomingList(viewModel),
+        ],
+      ),
+    );
+  }
+
+  Widget? _buildFab(BuildContext context, HomeViewModel viewModel) {
+    if (_selectedIndex == 0) {
+      return SpeedDial(
+        icon: Icons.add,
+        activeIcon: Icons.close,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.deepPurple.shade300,
+        overlayColor: Colors.black,
+        overlayOpacity: 0.5,
+        children: [
+          SpeedDialChild(
+            child: const Icon(Icons.task, color: Colors.white),
+            backgroundColor: Colors.blue.shade400,
+            label: 'Görev Ekle',
+            labelStyle: const TextStyle(fontSize: 16),
+            onTap: () {
+              if (viewModel.categories.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
+                );
+              } else {
+                _showAddTaskDialog(context, viewModel, null);
+              }
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.event, color: Colors.white),
+            backgroundColor: Colors.deepPurple.shade300,
+            label: 'Etkinlik Ekle',
+            labelStyle: const TextStyle(fontSize: 16),
+            onTap: () {
+               if (viewModel.categories.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
+                );
+              } else {
+                _showAddEventDialog(context, viewModel, null);
+              }
+            },
+          ),
+        ],
+      );
+    }
+    return null;
+  }
+
+  Drawer _buildDrawer(BuildContext context, HomeViewModel viewModel) {
+    return Drawer(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        color: Colors.transparent,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 8.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  width: 300,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.85),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.25),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: ListView(
+                    padding: EdgeInsets.zero,
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                        child: Text(
-                          'Takvim',
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
-                      ),
                       Container(
-                        height: MediaQuery.of(context).size.height * 0.6,
-                        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
+                          gradient: LinearGradient(
+                            colors: [Colors.deepPurple.shade300, Colors.deepPurple.shade400],
+                          ),
                         ),
-                        child: SfCalendar(
-                          controller: _calendarController,
-                          dataSource: dataSource,
-                          backgroundColor: Colors.transparent,
-                          headerStyle: const CalendarHeaderStyle(
-                            textStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
-                            backgroundColor: Colors.transparent,
-                          ),
-                          viewHeaderStyle: const ViewHeaderStyle(
-                            dayTextStyle: TextStyle(color: Colors.black, fontSize: 14),
-                            dateTextStyle: TextStyle(color: Colors.black, fontSize: 14),
-                          ),
-                          monthViewSettings: const MonthViewSettings(
-                            appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
-                            showAgenda: true,
-                            monthCellStyle: MonthCellStyle(
-                              textStyle: TextStyle(color: Colors.black),
-                              trailingDatesTextStyle: TextStyle(color: Colors.grey),
-                              leadingDatesTextStyle: TextStyle(color: Colors.grey),
-                              todayTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              todayBackgroundColor: Colors.blue,
-                              backgroundColor: Colors.transparent,
-                            ),
-                          ),
-                          scheduleViewSettings: const ScheduleViewSettings(
-                            appointmentItemHeight: 70,
-                            monthHeaderSettings: MonthHeaderSettings(
-                              height: 100,
-                              textAlign: TextAlign.left,
-                              backgroundColor: Colors.transparent,
-                              monthFormat: 'MMMM, yyyy',
-                              monthTextStyle: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                            weekHeaderSettings: WeekHeaderSettings(
-                              weekTextStyle: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                            dayHeaderSettings: DayHeaderSettings(
-                              dayFormat: 'EEEE',
-                              width: 70,
-                              dayTextStyle: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w300,
-                                  color: Colors.black),
-                              dateTextStyle: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w300,
-                                  color: Colors.black),
-                            ),
-                          ),
-                          selectionDecoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.3),
-                            border: Border.all(color: Colors.blue, width: 2),
-                            borderRadius: const BorderRadius.all(Radius.circular(50)),
-                            shape: BoxShape.rectangle,
-                          ),
-                          todayHighlightColor: Colors.blue,
-                          onTap: (CalendarTapDetails details) {
-                            if (details.targetElement == CalendarElement.calendarCell) {
-                              if (viewModel.categories.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
-                                );
-                              } else {
-                                _showAddDialog(context, viewModel, details.date);
-                              }
-                            }
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        child: const Row(
                           children: [
-                            ElevatedButton.icon(
-                              icon: const Icon(Icons.task_alt),
-                               onPressed: () {
-                                setState(() {
-                                  if (_shownListType == _UpcomingListType.tasks) {
-                                    _shownListType = _UpcomingListType.none;
-                                  } else {
-                                    _shownListType = _UpcomingListType.tasks;
-                                  }
-                                });
-                              },
-                              label: const Text('Yaklaşan Görevler'),
-                              style: ElevatedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  backgroundColor: Colors.blue.shade400,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
-                               ),
-                            ),
-                            ElevatedButton.icon(
-                              icon: const Icon(Icons.event_available),
-                              onPressed: () {
-                                setState(() {
-                                  if (_shownListType == _UpcomingListType.events) {
-                                    _shownListType = _UpcomingListType.none;
-                                  } else {
-                                    _shownListType = _UpcomingListType.events;
-                                  }
-                                });
-                              },
-                              label: const Text('Yaklaşan Etkinlikler'),
-                               style: ElevatedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  backgroundColor: Colors.deepPurple.shade300,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
-                               ),
+                            Icon(Icons.menu, color: Colors.white, size: 28),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Menü',
+                                style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                       _buildUpcomingList(viewModel),
+                      ListTile(
+                        leading: Icon(Icons.category, color: Colors.deepPurple.shade600),
+                        title: Text('Kategoriler', style: TextStyle(color: Colors.black87)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const CategoriesView()),
+                          ).then((_) => viewModel.fetchInitialData());
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.task, color: Colors.deepPurple.shade600),
+                        title: Text('Görevler', style: TextStyle(color: Colors.black87)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const TasksView()),
+                          ).then((_) => viewModel.fetchInitialData());
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.event, color: Colors.deepPurple.shade600),
+                        title: Text('Etkinlikler', style: TextStyle(color: Colors.black87)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const EventsView()),
+                          ).then((_) => viewModel.fetchInitialData());
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.photo_album, color: Colors.deepPurple.shade600),
+                        title: Text('Resim Galerisi', style: TextStyle(color: Colors.black87)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const ImageGalleryView()),
+                          );
+                        },
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(Icons.settings, color: Colors.deepPurple.shade600),
+                        title: Text('Ayarlar', style: TextStyle(color: Colors.black87)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const SettingsView()),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 8),
                     ],
                   ),
                 ),
               ),
             ),
-            floatingActionButton: SpeedDial(
-              icon: Icons.add,
-              activeIcon: Icons.close,
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.deepPurple.shade300,
-              overlayColor: Colors.black,
-              overlayOpacity: 0.5,
-              children: [
-                SpeedDialChild(
-                  child: const Icon(Icons.task, color: Colors.white),
-                  backgroundColor: Colors.blue.shade400,
-                  label: 'Görev Ekle',
-                  labelStyle: const TextStyle(fontSize: 16),
-                  onTap: () {
-                    if (viewModel.categories.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
-                      );
-                    } else {
-                      _showAddTaskDialog(context, viewModel, null);
-                    }
-                  },
-                ),
-                SpeedDialChild(
-                  child: const Icon(Icons.event, color: Colors.white),
-                  backgroundColor: Colors.deepPurple.shade300,
-                  label: 'Etkinlik Ekle',
-                  labelStyle: const TextStyle(fontSize: 16),
-                  onTap: () {
-                     if (viewModel.categories.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
-                      );
-                    } else {
-                      _showAddEventDialog(context, viewModel, null);
-                    }
-                  },
-                ),
-              ],
-            ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
