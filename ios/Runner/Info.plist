@@ -45,5 +45,12 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+    <string>Uygulama, etkinliklere konum ekleyebilmeniz için konumunuza erişmek istiyor.</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>comgooglemaps</string>
+        <string>iosamap</string>
+    </array>
 </dict>
 </plist>

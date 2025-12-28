@@ -6,6 +6,8 @@ class EventRequest {
   final DateTime endTime;
   final String location;
   final int? categoryId;
+  final double? latitude;
+  final double? longitude;
 
   EventRequest({
     required this.title,
@@ -14,6 +16,8 @@ class EventRequest {
     required this.endTime,
     required this.location,
     this.categoryId,
+    this.latitude,
+    this.longitude,
   });
 
   Map<String, dynamic> toJson() {
@@ -24,6 +28,8 @@ class EventRequest {
       'endTime': endTime.toIso8601String(),
       'location': location,
       'categoryId': categoryId,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 }

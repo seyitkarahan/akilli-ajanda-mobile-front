@@ -8,6 +8,8 @@ class EventResponse {
   final String location;
   final int userId;
   final int? categoryId;
+  final double? latitude;
+  final double? longitude;
 
   EventResponse({
     required this.id,
@@ -18,6 +20,8 @@ class EventResponse {
     required this.location,
     required this.userId,
     this.categoryId,
+    this.latitude,
+    this.longitude,
   });
 
   factory EventResponse.fromJson(Map<String, dynamic> json) {
@@ -30,6 +34,8 @@ class EventResponse {
       location: json['location'],
       userId: json['userId'],
       categoryId: json['categoryId'],
+      latitude: json['latitude']?.toDouble(),
+      longitude: json['longitude']?.toDouble(),
     );
   }
 }

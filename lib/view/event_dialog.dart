@@ -1,5 +1,7 @@
+import 'package:akilli_ajanda_front/view/map_screen.dart';
 import 'package:akilli_ajanda_front/widgets/custom_textfield.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
 import '../model/event_request.dart';
@@ -39,6 +41,7 @@ class _EventDialogContentState extends State<_EventDialogContent> {
   List<CategoryResponse> _categories = [];
   late DateTime _startTime;
   late DateTime _endTime;
+  LatLng? _selectedLocation;
 
   @override
   void initState() {
@@ -49,6 +52,9 @@ class _EventDialogContentState extends State<_EventDialogContent> {
     _categoryId = widget.event?.categoryId;
     _startTime = widget.event?.startTime ?? widget.selectedDate ?? DateTime.now();
     _endTime = widget.event?.endTime ?? (widget.selectedDate ?? DateTime.now()).add(const Duration(hours: 1));
+    if (widget.event?.latitude != null && widget.event?.longitude != null) {
+      _selectedLocation = LatLng(widget.event!.latitude!, widget.event!.longitude!);
+    }
     _fetchCategories();
   }
 
@@ -118,7 +124,9 @@ class _EventDialogContentState extends State<_EventDialogContent> {
                   const SizedBox(height: 16),
                   CustomTextField(controller: _descriptionController, labelText: 'Açıklama', icon: Icons.description),
                   const SizedBox(height: 16),
-                   CustomTextField(controller: _locationController, labelText: 'Konum', icon: Icons.location_on),
+                  CustomTextField(controller: _locationController, labelText: 'Konum Adresi', icon: Icons.location_on),
+                  const SizedBox(height: 16),
+                  _buildLocationPicker(context),
                   const SizedBox(height: 16),
                   if (_categories.isNotEmpty)
                     _buildCategoryDropdown(),
@@ -174,6 +182,8 @@ class _EventDialogContentState extends State<_EventDialogContent> {
                               categoryId: _categoryId,
                               startTime: _startTime,
                               endTime: _endTime,
+                              latitude: _selectedLocation?.latitude,
+                              longitude: _selectedLocation?.longitude,
                             );
                             Navigator.pop(context, request);
                           }
@@ -213,6 +223,50 @@ class _EventDialogContentState extends State<_EventDialogContent> {
                   style: const TextStyle(color: Colors.white),
                 ),
                 const Icon(Icons.calendar_today, color: Colors.white),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocationPicker(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Haritadan Konum Seç', style: TextStyle(color: Colors.white, fontSize: 16)),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () async {
+            final LatLng? result = await Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const MapScreen()),
+            );
+            if (result != null) {
+              setState(() {
+                _selectedLocation = result;
+              });
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: Text(
+                    _selectedLocation == null
+                        ? 'Konum Seç'
+                        : 'Lat: ${_selectedLocation!.latitude.toStringAsFixed(4)}, Lon: ${_selectedLocation!.longitude.toStringAsFixed(4)}',
+                    style: const TextStyle(color: Colors.white),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const Icon(Icons.map, color: Colors.white),
               ],
             ),
           ),
