@@ -4,6 +4,7 @@ import 'package:akilli_ajanda_front/model/event_request.dart';
 import 'package:akilli_ajanda_front/model/event_response.dart';
 import 'package:akilli_ajanda_front/model/task_request.dart';
 import 'package:akilli_ajanda_front/model/task_response.dart';
+import 'package:akilli_ajanda_front/model/task_status.dart';
 import 'package:akilli_ajanda_front/service/storage_service.dart';
 import 'package:akilli_ajanda_front/view/categories_view.dart';
 import 'package:akilli_ajanda_front/view/event_dialog.dart';
@@ -15,10 +16,13 @@ import 'package:akilli_ajanda_front/view/task_dialog.dart';
 import 'package:akilli_ajanda_front/view/tasks_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../view_model/home_view_model.dart';
 import 'dart:ui';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
+
+enum _UpcomingListType { none, tasks, events }
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -30,6 +34,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late HomeViewModel _viewModel;
   late CalendarController _calendarController;
+  _UpcomingListType _shownListType = _UpcomingListType.none;
+
 
   @override
   void initState() {
@@ -108,7 +114,7 @@ class _HomePageState extends State<HomePage> {
                         child: Container(
                           width: 300,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.85), // Arkaplan rengine karışmaz
+                            color: Colors.white.withOpacity(0.85),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.25),
@@ -215,18 +221,19 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               child: SafeArea(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                      child: Text(
-                        'Takvim',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                        child: Text(
+                          'Takvim',
+                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: Container(
+                      Container(
+                        height: MediaQuery.of(context).size.height * 0.6,
                         margin: const EdgeInsets.symmetric(horizontal: 16.0),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -307,8 +314,59 @@ class _HomePageState extends State<HomePage> {
                           },
                         ),
                       ),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.task_alt),
+                               onPressed: () {
+                                setState(() {
+                                  if (_shownListType == _UpcomingListType.tasks) {
+                                    _shownListType = _UpcomingListType.none;
+                                  } else {
+                                    _shownListType = _UpcomingListType.tasks;
+                                  }
+                                });
+                              },
+                              label: const Text('Yaklaşan Görevler'),
+                              style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.blue.shade400,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
+                               ),
+                            ),
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.event_available),
+                              onPressed: () {
+                                setState(() {
+                                  if (_shownListType == _UpcomingListType.events) {
+                                    _shownListType = _UpcomingListType.none;
+                                  } else {
+                                    _shownListType = _UpcomingListType.events;
+                                  }
+                                });
+                              },
+                              label: const Text('Yaklaşan Etkinlikler'),
+                               style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.deepPurple.shade300,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
+                               ),
+                            ),
+                          ],
+                        ),
+                      ),
+                       _buildUpcomingList(viewModel),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -357,6 +415,97 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  Widget _buildUpcomingList(HomeViewModel viewModel) {
+  if (_shownListType == _UpcomingListType.none) {
+    return const SizedBox.shrink();
+  }
+
+  final String title;
+  final List<Widget> items;
+  final DateFormat formatter = DateFormat('dd/MM/yyyy HH:mm');
+
+  if (_shownListType == _UpcomingListType.tasks) {
+    title = 'Yaklaşan Görevler';
+    final now = DateTime.now();
+    final upcomingTasks = viewModel.tasks.where((task) {
+      if (task.startTime == null) return false;
+      final difference = task.startTime!.difference(now).inDays;
+      return (task.status == TaskStatus.PENDING || task.status == TaskStatus.IN_PROGRESS) && difference >= 0 && difference <= 3;
+    }).toList();
+
+    if (upcomingTasks.isEmpty) {
+      items = [const ListTile(title: Text('Yaklaşan görev bulunmamaktadır.', style: TextStyle(color: Colors.white)))];
+    } else {
+      items = upcomingTasks.map((task) {
+        final String startTime = formatter.format(task.startTime!);
+        final String endTime = task.endTime != null ? formatter.format(task.endTime!) : 'Belirtilmemiş';
+        return Card(
+          color: Colors.white.withOpacity(0.8),
+          child: ListTile(
+            title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text('Başlangıç: $startTime\nBitiş: $endTime', style: const TextStyle(color: Colors.black54)),
+            isThreeLine: true,
+          ),
+        );
+      }).toList();
+    }
+  } else {
+    title = 'Yaklaşan Etkinlikler';
+    final now = DateTime.now();
+    final upcomingEvents = viewModel.events.where((event) {
+      if (event.startTime == null) return false;
+      final difference = event.startTime!.difference(now).inDays;
+      return difference >= 0 && difference <= 3;
+    }).toList();
+
+    if (upcomingEvents.isEmpty) {
+      items = [const ListTile(title: Text('Yaklaşan etkinlik bulunmamaktadır.', style: TextStyle(color: Colors.white)))];
+    } else {
+      items = upcomingEvents.map((event) {
+        final String startTime = formatter.format(event.startTime!);
+        final String endTime = event.endTime != null ? formatter.format(event.endTime!) : 'Belirtilmemiş';
+        return Card(
+          color: Colors.white.withOpacity(0.8),
+          child: ListTile(
+            title: Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text('Başlangıç: $startTime\nBitiş: $endTime', style: const TextStyle(color: Colors.black54)),
+            isThreeLine: true,
+          ),
+        );
+      }).toList();
+    }
+  }
+
+  return AnimatedContainer(
+    duration: const Duration(milliseconds: 300),
+    margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    padding: const EdgeInsets.all(12.0),
+    decoration: BoxDecoration(
+      color: Colors.black.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(15),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxHeight: 150,
+          ),
+          child: ListView(
+            shrinkWrap: true,
+            children: items,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   void _showAddDialog(BuildContext context, HomeViewModel viewModel, DateTime? selectedDate) {
     showDialog(
@@ -457,7 +606,7 @@ class _HomePageState extends State<HomePage> {
       }
     }
   }
-  
+
   void _showAddEventDialog(BuildContext context, HomeViewModel viewModel, DateTime? selectedDate) async {
     final request = await showDialog<EventRequest>(
       context: context,
