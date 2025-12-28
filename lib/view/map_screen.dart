@@ -82,16 +82,16 @@ class _MapScreenState extends State<MapScreen> {
       body: _initialPosition == null
           ? const Center(child: CircularProgressIndicator())
           : GoogleMap(
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: CameraPosition(
-                target: _initialPosition!,
-                zoom: 15.0,
-              ),
-              onTap: _onTap,
-              markers: _markers,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: true,
-            ),
+        onMapCreated: _onMapCreated,
+        initialCameraPosition: CameraPosition(
+          target: _initialPosition!,
+          zoom: 15.0,
+        ),
+        onTap: _onTap,
+        markers: _markers,
+        myLocationEnabled: true,
+        myLocationButtonEnabled: true,
+      ),
     );
   }
 }
