@@ -1,7 +1,9 @@
 import 'package:akilli_ajanda_front/model/event_request.dart';
 import 'package:akilli_ajanda_front/model/event_response.dart';
 import 'package:akilli_ajanda_front/view/event_dialog.dart';
+import 'package:akilli_ajanda_front/view/map_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import '../view_model/event_view_model.dart';
 
@@ -49,7 +51,28 @@ class EventsView extends StatelessWidget {
                           child: ListTile(
                             leading: const Icon(Icons.event, color: Colors.white),
                             title: Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
-                            subtitle: Text(event.description, style: TextStyle(color: Colors.white.withOpacity(0.9))),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(event.description, style: TextStyle(color: Colors.white.withOpacity(0.9))),
+                                if (event.location != null && event.location!.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.location_on, color: Colors.white.withOpacity(0.7), size: 14),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          event.location!,
+                                          style: TextStyle(color: Colors.white.withOpacity(0.9)),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
                             trailing: PopupMenuButton<String>(
                               onSelected: (value) async {
                                 if (value == 'edit') {
@@ -62,6 +85,14 @@ class EventsView extends StatelessWidget {
                                   }
                                 } else if (value == 'delete') {
                                   _showDeleteConfirmationDialog(context, viewModel, event);
+                                } else if (value == 'show_location') {
+                                  if (event.latitude != null && event.longitude != null) {
+                                    Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => MapScreen(
+                                        location: LatLng(event.latitude!, event.longitude!),
+                                      ),
+                                    ));
+                                  }
                                 }
                               },
                               itemBuilder: (BuildContext context) => [
@@ -73,6 +104,11 @@ class EventsView extends StatelessWidget {
                                   value: 'delete',
                                   child: Row(children: [Icon(Icons.delete_outline), SizedBox(width: 8), Text('Sil')]),
                                 ),
+                                if (event.latitude != null && event.longitude != null)
+                                  const PopupMenuItem(
+                                    value: 'show_location',
+                                    child: Row(children: [Icon(Icons.map_outlined), SizedBox(width: 8), Text('Konumu Göster')]),
+                                  ),
                               ],
                               icon: const Icon(Icons.more_vert, color: Colors.white70),
                             ),

@@ -1,6 +1,7 @@
 import 'package:akilli_ajanda_front/view/map_screen.dart';
 import 'package:akilli_ajanda_front/widgets/custom_textfield.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
@@ -66,6 +67,51 @@ class _EventDialogContentState extends State<_EventDialogContent> {
         _categoryId = _categories.first.id;
       }
     });
+  }
+
+  Future<void> _getPlace(LatLng coordinates) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(coordinates.latitude, coordinates.longitude);
+
+      if (placemarks.isNotEmpty) {
+        final Placemark place = placemarks.first;
+        String address = [
+          place.name,
+          place.street,
+          place.subLocality,
+          place.locality,
+          place.administrativeArea,
+          place.postalCode,
+          place.country,
+        ].where((element) => element != null && element.isNotEmpty).join(', ');
+
+        if (address.isEmpty) {
+          if (mounted) {
+            _locationController.text = "Adres detayı bulunamadı.";
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Bu konum için adres detayı bulunamadı.')),
+            );
+          }
+        } else {
+          _locationController.text = address;
+        }
+      } else {
+        if (mounted) {
+          _locationController.text = "Adres bulunamadı.";
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Bu konum için adres bulunamadı.')),
+          );
+        }
+      }
+    } catch (e) {
+      print(e);
+      if (mounted) {
+        _locationController.text = "Adres alınırken hata oluştu.";
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Adres alınamadı: ${e.toString()}')),
+        );
+      }
+    }
   }
 
   Future<DateTime?> _pickDateTime(BuildContext context, DateTime initialDate) async {
@@ -245,7 +291,9 @@ class _EventDialogContentState extends State<_EventDialogContent> {
             if (result != null) {
               setState(() {
                 _selectedLocation = result;
+                _locationController.text = 'Adres aranıyor...';
               });
+              await _getPlace(result);
             }
           },
           child: Container(

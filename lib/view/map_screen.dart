@@ -4,7 +4,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  final LatLng? location;
+
+  const MapScreen({super.key, this.location});
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -16,10 +18,25 @@ class _MapScreenState extends State<MapScreen> {
   LatLng? _initialPosition;
   final Set<Marker> _markers = {};
 
+  bool get _isViewing => widget.location != null;
+
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+    if (_isViewing) {
+      _initialPosition = widget.location;
+      _selectedLocation = widget.location;
+      if (_selectedLocation != null) {
+        _markers.add(
+          Marker(
+            markerId: const MarkerId('event-location'),
+            position: _selectedLocation!,
+          ),
+        );
+      }
+    } else {
+      _getCurrentLocation();
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -37,11 +54,9 @@ class _MapScreenState extends State<MapScreen> {
         );
       });
     } catch (e) {
-      // Handle location errors
       print(e);
       setState(() {
-        // Fallback to a default location if user location is not available
-        _initialPosition = const LatLng(38.9637, 35.2433); // Turkey
+        _initialPosition = const LatLng(38.9637, 35.2433);
       });
     }
   }
@@ -51,6 +66,8 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _onTap(LatLng location) {
+    if (_isViewing) return;
+
     setState(() {
       _selectedLocation = location;
       _markers.clear();
@@ -67,31 +84,32 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Konum Seç'),
+        title: Text(_isViewing ? 'Etkinlik Konumu' : 'Konum Seç'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.check),
-            onPressed: () {
-              if (_selectedLocation != null) {
-                Navigator.of(context).pop(_selectedLocation);
-              }
-            },
-          ),
+          if (!_isViewing)
+            IconButton(
+              icon: const Icon(Icons.check),
+              onPressed: () {
+                if (_selectedLocation != null) {
+                  Navigator.of(context).pop(_selectedLocation);
+                }
+              },
+            ),
         ],
       ),
       body: _initialPosition == null
           ? const Center(child: CircularProgressIndicator())
           : GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(
-          target: _initialPosition!,
-          zoom: 15.0,
-        ),
-        onTap: _onTap,
-        markers: _markers,
-        myLocationEnabled: true,
-        myLocationButtonEnabled: true,
-      ),
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: CameraPosition(
+                target: _initialPosition!,
+                zoom: 15.0,
+              ),
+              onTap: _onTap,
+              markers: _markers,
+              myLocationEnabled: !_isViewing,
+              myLocationButtonEnabled: !_isViewing,
+            ),
     );
   }
 }
