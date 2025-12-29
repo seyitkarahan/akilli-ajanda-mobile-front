@@ -537,11 +537,21 @@ class _HomePageState extends State<HomePage> {
       items = upcomingTasks.map((task) {
         final String startTime = formatter.format(task.startTime!);
         final String endTime = task.endTime != null ? formatter.format(task.endTime!) : 'Belirtilmemiş';
+        final difference = task.startTime!.difference(now);
+        final bool showCountdown = difference.isNegative == false && difference.inHours < 24;
+
         return Card(
           color: Colors.white.withOpacity(0.8),
           child: ListTile(
             title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text('Başlangıç: $startTime\nBitiş: $endTime', style: const TextStyle(color: Colors.black54)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Başlangıç: $startTime\nBitiş: $endTime', style: const TextStyle(color: Colors.black54)),
+                if (showCountdown)
+                  Text('Kalan Süre: ${difference.inHours} sa ${difference.inMinutes.remainder(60)} dk', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              ],
+            ),
             isThreeLine: true,
           ),
         );
@@ -562,11 +572,21 @@ class _HomePageState extends State<HomePage> {
       items = upcomingEvents.map((event) {
         final String startTime = formatter.format(event.startTime!);
         final String endTime = event.endTime != null ? formatter.format(event.endTime!) : 'Belirtilmemiş';
+        final difference = event.startTime!.difference(now);
+        final bool showCountdown = difference.isNegative == false && difference.inHours < 24;
+
         return Card(
           color: Colors.white.withOpacity(0.8),
           child: ListTile(
             title: Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text('Başlangıç: $startTime\nBitiş: $endTime', style: const TextStyle(color: Colors.black54)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Başlangıç: $startTime\nBitiş: $endTime', style: const TextStyle(color: Colors.black54)),
+                if (showCountdown)
+                  Text('Kalan Süre: ${difference.inHours} sa ${difference.inMinutes.remainder(60)} dk', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              ],
+            ),
             isThreeLine: true,
           ),
         );
