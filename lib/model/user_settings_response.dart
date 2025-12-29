@@ -1,20 +1,44 @@
 class UserSettingsResponse {
-  final int id;
-  final String notificationPrefence;
-  final String timezone;
-  final int userId;
+  int? id;
+  String? theme;
+  String? language;
+  String? startDayOfWeek;
+  String? dateFormat;
+  bool? is24HourFormat;
+  bool? emailNotificationsEnabled;
+  bool? pushNotificationsEnabled;
+  int? defaultTaskReminderMinutes;
+  int? defaultEventReminderMinutes;
+  String? timezone;
+  int? userId;
 
   UserSettingsResponse({
-    required this.id,
-    required this.notificationPrefence,
-    required this.timezone,
-    required this.userId,
+    this.id,
+    this.theme,
+    this.language,
+    this.startDayOfWeek,
+    this.dateFormat,
+    this.is24HourFormat,
+    this.emailNotificationsEnabled,
+    this.pushNotificationsEnabled,
+    this.defaultTaskReminderMinutes,
+    this.defaultEventReminderMinutes,
+    this.timezone,
+    this.userId,
   });
 
   factory UserSettingsResponse.fromJson(Map<String, dynamic> json) {
     return UserSettingsResponse(
       id: json['id'],
-      notificationPrefence: json['notificationPrefence'],
+      theme: json['theme'],
+      language: json['language'],
+      startDayOfWeek: json['startDayOfWeek'],
+      dateFormat: json['dateFormat'],
+      is24HourFormat: json['is24HourFormat'],
+      emailNotificationsEnabled: json['emailNotificationsEnabled'],
+      pushNotificationsEnabled: json['pushNotificationsEnabled'],
+      defaultTaskReminderMinutes: json['defaultTaskReminderMinutes'],
+      defaultEventReminderMinutes: json['defaultEventReminderMinutes'],
       timezone: json['timezone'],
       userId: json['userId'],
     );
