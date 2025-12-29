@@ -1,3 +1,4 @@
+import 'package:akilli_ajanda_front/model/task_status.dart';
 import 'package:flutter/material.dart';
 import '../model/task_request.dart';
 import '../model/task_response.dart';
@@ -37,5 +38,19 @@ class TaskViewModel extends ChangeNotifier {
     await _apiService.deleteTask(id);
     _tasks.removeWhere((element) => element.id == id);
     notifyListeners();
+  }
+
+  Future<void> updateTaskStatus(TaskResponse task, TaskStatus newStatus) async {
+    final request = TaskRequest(
+      title: task.title,
+      description: task.description,
+      status: newStatus,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      importanceLevel: task.importanceLevel,
+      categoryId: task.categoryId,
+      recurringRuleId: task.recurringRuleId,
+    );
+    await updateTask(task.id, request);
   }
 }

@@ -4,6 +4,7 @@ import 'package:akilli_ajanda_front/view/event_dialog.dart';
 import 'package:akilli_ajanda_front/view/map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../view_model/event_view_model.dart';
 
@@ -49,12 +50,13 @@ class EventsView extends StatelessWidget {
                           margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                           child: ListTile(
+                            onTap: () => _showEventDetailDialog(context, event),
                             leading: const Icon(Icons.event, color: Colors.white),
                             title: Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(event.description, style: TextStyle(color: Colors.white.withOpacity(0.9))),
+                                Text(event.description, style: TextStyle(color: Colors.white.withOpacity(0.9)), maxLines: 1, overflow: TextOverflow.ellipsis),
                                 if (event.location != null && event.location!.isNotEmpty) ...[
                                   const SizedBox(height: 4),
                                   Row(
@@ -137,6 +139,44 @@ class EventsView extends StatelessWidget {
         },
       ),
     );
+  }
+
+  void _showEventDetailDialog(BuildContext context, EventResponse event) {
+    final DateFormat formatter = DateFormat('dd/MM/yyyy HH:mm');
+    showDialog(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+            backgroundColor: Colors.deepPurple.shade300.withOpacity(0.95),
+            title: Text(event.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Açıklama:', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12)),
+                  Text(event.description ?? 'Yok', style: const TextStyle(color: Colors.white)),
+                  const SizedBox(height: 12),
+                  Text('Konum:', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12)),
+                  Text(event.location ?? 'Belirtilmemiş', style: const TextStyle(color: Colors.white)),
+                  const SizedBox(height: 12),
+                  Text('Başlangıç Zamanı:', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12)),
+                  Text(event.startTime != null ? formatter.format(event.startTime!) : 'Belirtilmemiş', style: const TextStyle(color: Colors.white)),
+                  const SizedBox(height: 12),
+                  Text('Bitiş Zamanı:', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12)),
+                  Text(event.endTime != null ? formatter.format(event.endTime!) : 'Belirtilmemiş', style: const TextStyle(color: Colors.white)),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Kapat', style: TextStyle(color: Colors.white70)),
+              ),
+            ],
+          );
+        });
   }
 
   void _showDeleteConfirmationDialog(BuildContext context, EventViewModel viewModel, EventResponse event) {
