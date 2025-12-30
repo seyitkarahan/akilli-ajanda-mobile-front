@@ -12,20 +12,30 @@ import 'package:provider/provider.dart';
 class CategoryDetailView extends StatelessWidget {
   final CategoryResponse category;
 
-  const CategoryDetailView({Key? key, required this.category}) : super(key: key);
+  const CategoryDetailView({
+    super.key,
+    required this.category,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => CategoryDetailViewModel()..fetchTasksAndEvents(category.id),
+      create: (_) =>
+      CategoryDetailViewModel()..fetchTasksAndEvents(category.id),
       child: Consumer<CategoryDetailViewModel>(
-        builder: (context, viewModel, child) {
+        builder: (context, viewModel, _) {
           return DefaultTabController(
             length: 2,
             child: Scaffold(
               extendBodyBehindAppBar: true,
               appBar: AppBar(
-                title: Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                title: Text(
+                  category.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
                 elevation: 0,
                 backgroundColor: Colors.transparent,
                 iconTheme: const IconThemeData(color: Colors.white),
@@ -40,9 +50,12 @@ class CategoryDetailView extends StatelessWidget {
                 ),
               ),
               body: Container(
-                 decoration: BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.deepPurple.shade300, Colors.blue.shade400],
+                    colors: [
+                      Colors.deepPurple.shade300,
+                      Colors.blue.shade400,
+                    ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -50,8 +63,8 @@ class CategoryDetailView extends StatelessWidget {
                 child: SafeArea(
                   child: TabBarView(
                     children: [
-                      _buildTasksList(context, viewModel),
-                      _buildEventsList(context, viewModel),
+                      _buildTasksTab(context, viewModel),
+                      _buildEventsTab(context, viewModel),
                     ],
                   ),
                 ),
@@ -63,48 +76,65 @@ class CategoryDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildTasksList(BuildContext context, CategoryDetailViewModel viewModel) {
+  /// ✅ TASKS TAB
+  Widget _buildTasksTab(
+      BuildContext context, CategoryDetailViewModel viewModel) {
     if (viewModel.tasks.isEmpty) {
-      return const Center(child: Text('Bu kategoride görev yok.', style: TextStyle(color: Colors.white)));
+      return const Center(
+        child: Text(
+          'Bu kategoride görev yok.',
+          style: TextStyle(color: Colors.white70),
+        ),
+      );
     }
+
     return ListView.builder(
+      padding: const EdgeInsets.all(16),
       itemCount: viewModel.tasks.length,
       itemBuilder: (context, index) {
         final task = viewModel.tasks[index];
-        return Card(
-          elevation: 4,
-          color: Colors.white.withOpacity(0.25),
-          margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+
+        return _glassCard(
           child: ListTile(
-            leading: const Icon(Icons.check_circle_outline, color: Colors.white),
-            title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
-            subtitle: Text(task.description ?? '', style: TextStyle(color: Colors.white.withOpacity(0.9))),
-            trailing: PopupMenuButton<String>(
-              onSelected: (value) async {
-                if (value == 'edit') {
-                  final request = await showDialog<TaskRequest>(
-                    context: context,
-                    builder: (_) => TaskDialog(task: task),
-                  );
-                  if (request != null) {
-                    viewModel.updateTask(task.id, request);
-                  }
-                } else if (value == 'delete') {
-                  _showDeleteConfirmationDialog(context, viewModel, task, null);
+            leading: const Icon(
+              Icons.check_circle_outline,
+              color: Colors.white70,
+            ),
+            title: Text(
+              task.title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: task.description != null &&
+                task.description!.isNotEmpty
+                ? Text(
+              task.description!,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.85),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            )
+                : null,
+            trailing: _popupMenu(
+              onEdit: () async {
+                final request = await showDialog<TaskRequest>(
+                  context: context,
+                  builder: (_) => TaskDialog(task: task),
+                );
+                if (request != null) {
+                  viewModel.updateTask(task.id, request);
                 }
               },
-              itemBuilder: (BuildContext context) => [
-                const PopupMenuItem(
-                  value: 'edit',
-                  child: Row(children: [Icon(Icons.edit_outlined), SizedBox(width: 8), Text('Düzenle')]),
-                ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Row(children: [Icon(Icons.delete_outline), SizedBox(width: 8), Text('Sil')]),
-                ),
-              ],
-              icon: const Icon(Icons.more_vert, color: Colors.white70),
+              onDelete: () {
+                _showDeleteConfirmationDialog(
+                  context,
+                  viewModel,
+                  task: task,
+                );
+              },
             ),
           ),
         );
@@ -112,67 +142,147 @@ class CategoryDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildEventsList(BuildContext context, CategoryDetailViewModel viewModel) {
+  /// ✅ EVENTS TAB
+  Widget _buildEventsTab(
+      BuildContext context, CategoryDetailViewModel viewModel) {
     if (viewModel.events.isEmpty) {
-      return const Center(child: Text('Bu kategoride etkinlik yok.', style: TextStyle(color: Colors.white)));
+      return const Center(
+        child: Text(
+          'Bu kategoride etkinlik yok.',
+          style: TextStyle(color: Colors.white70),
+        ),
+      );
     }
+
     return ListView.builder(
+      padding: const EdgeInsets.all(16),
       itemCount: viewModel.events.length,
       itemBuilder: (context, index) {
         final event = viewModel.events[index];
-        return Card(
-          elevation: 4,
-          color: Colors.white.withOpacity(0.25),
-          margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+
+        return _glassCard(
           child: ListTile(
-            leading: const Icon(Icons.event, color: Colors.white),
-            title: Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
-            subtitle: Text(event.description, style: TextStyle(color: Colors.white.withOpacity(0.9))),
-             trailing: PopupMenuButton<String>(
-              onSelected: (value) async {
-                if (value == 'edit') {
-                  final request = await showDialog<EventRequest>(
-                    context: context,
-                    builder: (_) => EventDialog(event: event),
-                  );
-                  if (request != null) {
-                    viewModel.updateEvent(event.id, request);
-                  }
-                } else if (value == 'delete') {
-                  _showDeleteConfirmationDialog(context, viewModel, null, event);
+            leading: const Icon(Icons.event, color: Colors.white70),
+            title: Text(
+              event.title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              event.description,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.85),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: _popupMenu(
+              onEdit: () async {
+                final request = await showDialog<EventRequest>(
+                  context: context,
+                  builder: (_) => EventDialog(event: event),
+                );
+                if (request != null) {
+                  viewModel.updateEvent(event.id, request);
                 }
               },
-              itemBuilder: (BuildContext context) => [
-                const PopupMenuItem(
-                  value: 'edit',
-                  child: Row(children: [Icon(Icons.edit_outlined), SizedBox(width: 8), Text('Düzenle')]),
-                ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Row(children: [Icon(Icons.delete_outline), SizedBox(width: 8), Text('Sil')]),
-                ),
-              ],
-              icon: const Icon(Icons.more_vert, color: Colors.white70),
+              onDelete: () {
+                _showDeleteConfirmationDialog(
+                  context,
+                  viewModel,
+                  event: event,
+                );
+              },
             ),
           ),
         );
       },
     );
   }
-   void _showDeleteConfirmationDialog(BuildContext context, CategoryDetailViewModel viewModel, TaskResponse? task, EventResponse? event) {
+
+  /// 🧊 GLASS CARD
+  Widget _glassCard({required Widget child}) {
+    return Card(
+      color: Colors.white.withOpacity(0.15),
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape:
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: child,
+    );
+  }
+
+  /// ⋮ POPUP MENU
+  Widget _popupMenu({
+    required VoidCallback onEdit,
+    required VoidCallback onDelete,
+  }) {
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert, color: Colors.white70),
+      color: Colors.deepPurple.shade600,
+      onSelected: (value) {
+        if (value == 'edit') {
+          onEdit();
+        } else if (value == 'delete') {
+          onDelete();
+        }
+      },
+      itemBuilder: (_) => [
+        _popupItem(Icons.edit_outlined, 'Düzenle', 'edit'),
+        _popupItem(Icons.delete_outline, 'Sil', 'delete'),
+      ],
+    );
+  }
+
+  PopupMenuItem<String> _popupItem(
+      IconData icon, String text, String value) {
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white70),
+          const SizedBox(width: 8),
+          Text(text, style: const TextStyle(color: Colors.white)),
+        ],
+      ),
+    );
+  }
+
+  /// 🗑 DELETE CONFIRMATION
+  void _showDeleteConfirmationDialog(
+      BuildContext context,
+      CategoryDetailViewModel viewModel, {
+        TaskResponse? task,
+        EventResponse? event,
+      }) {
     showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-          backgroundColor: Colors.deepPurple.shade300.withOpacity(0.9),
-          title: Text(task != null ? 'Görevi Sil' : 'Etkinliği Sil', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          content: Text('\'${task != null ? task.title : event!.title}\' ${task != null ? 'görevini' : 'etkinliğini'} silmek istediğinizden emin misiniz?', style: const TextStyle(color: Colors.white)),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          backgroundColor:
+          Colors.deepPurple.shade300.withOpacity(0.95),
+          title: Text(
+            task != null ? 'Görevi Sil' : 'Etkinliği Sil',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            "'${task?.title ?? event!.title}' silmek istediğinizden emin misiniz?",
+            style: const TextStyle(color: Colors.white),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('İptal', style: TextStyle(color: Colors.white70)),
+              child: const Text(
+                'İptal',
+                style: TextStyle(color: Colors.white70),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(

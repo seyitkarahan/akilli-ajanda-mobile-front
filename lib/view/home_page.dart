@@ -11,6 +11,7 @@ import 'package:akilli_ajanda_front/view/event_dialog.dart';
 import 'package:akilli_ajanda_front/view/events_view.dart';
 import 'package:akilli_ajanda_front/view/image_gallery_view.dart';
 import 'package:akilli_ajanda_front/view/login_view.dart';
+import 'package:akilli_ajanda_front/view/map_view.dart';
 import 'package:akilli_ajanda_front/view/settings_view.dart';
 import 'package:akilli_ajanda_front/view/task_dialog.dart';
 import 'package:akilli_ajanda_front/view/tasks_view.dart';
@@ -476,6 +477,17 @@ class _HomePageState extends State<HomePage> {
                             context,
                             MaterialPageRoute(builder: (_) => const EventsView()),
                           ).then((_) => viewModel.fetchInitialData());
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.map, color: Colors.deepPurple.shade600),
+                        title: Text('Etkinlik Haritası', style: TextStyle(color: Colors.black87)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => MapView(viewModel: viewModel)),
+                          );
                         },
                       ),
                       ListTile(

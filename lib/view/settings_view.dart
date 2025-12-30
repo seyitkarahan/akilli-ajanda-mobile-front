@@ -32,7 +32,7 @@ class SettingsView extends StatelessWidget {
               child: SafeArea(
                 child: viewModel.isLoading && viewModel.userSettings == null
                     ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                    : _buildSettingsForm(context, viewModel),
+                    : _buildSettingsContent(context, viewModel),
               ),
             ),
           );
@@ -41,7 +41,7 @@ class SettingsView extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsForm(BuildContext context, SettingsViewModel viewModel) {
+  Widget _buildSettingsContent(BuildContext context, SettingsViewModel viewModel) {
     if (viewModel.userSettings == null) {
       return const Center(child: Text("Ayarlar yüklenemedi.", style: TextStyle(color: Colors.white)));
     }
@@ -49,25 +49,43 @@ class SettingsView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16.0),
       children: [
-        _buildSectionTitle('Görünüm Ayarları'),
-        _buildThemeDropdown(viewModel),
-        _buildLanguageDropdown(viewModel),
+        _buildSettingsSection(
+          context,
+          title: 'Görünüm Ayarları',
+          children: [
+            _buildThemeDropdown(viewModel),
+            _buildLanguageDropdown(viewModel),
+          ],
+        ),
         const SizedBox(height: 20),
-        _buildSectionTitle('Takvim Ayarları'),
-        _buildStartDayOfWeekDropdown(viewModel),
-        _buildDateFormatDropdown(viewModel),
-        _buildIs24HourFormatSwitch(viewModel),
+        _buildSettingsSection(
+          context,
+          title: 'Takvim Ayarları',
+          children: [
+            _buildStartDayOfWeekDropdown(viewModel),
+            _buildDateFormatDropdown(viewModel),
+            _buildIs24HourFormatSwitch(viewModel),
+          ],
+        ),
         const SizedBox(height: 20),
-        _buildSectionTitle('Bildirim Ayarları'),
-        _buildEmailNotificationsSwitch(viewModel),
-        _buildPushNotificationsSwitch(viewModel),
+        _buildSettingsSection(
+          context,
+          title: 'Bildirim Ayarları',
+          children: [
+            _buildEmailNotificationsSwitch(viewModel),
+            _buildPushNotificationsSwitch(viewModel),
+          ],
+        ),
         const SizedBox(height: 20),
-        _buildSectionTitle('Varsayılan Hatırlatıcı Süreleri'),
-        _buildReminderTextField(viewModel.defaultTaskReminderMinutesController, 'Görev Hatırlatıcı (dakika)'),
-        const SizedBox(height: 10),
-        _buildReminderTextField(viewModel.defaultEventReminderMinutesController, 'Etkinlik Hatırlatıcı (dakika)'),
-        const SizedBox(height: 10),
-        _buildTimezoneDropdown(viewModel),
+        _buildSettingsSection(
+          context,
+          title: 'Varsayılan Hatırlatıcı Süreleri',
+          children: [
+            _buildReminderTextField(viewModel.defaultTaskReminderMinutesController, 'Görev Hatırlatıcı (dakika)', Icons.task_alt),
+            _buildReminderTextField(viewModel.defaultEventReminderMinutesController, 'Etkinlik Hatırlatıcı (dakika)', Icons.event),
+            _buildTimezoneDropdown(viewModel),
+          ],
+        ),
         const SizedBox(height: 40),
         CustomButton(
           onPressed: () async {
@@ -87,78 +105,159 @@ class SettingsView extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+  Widget _buildSettingsSection(BuildContext context, {required String title, required List<Widget> children}) {
+    return Card(
+      color: Colors.white.withOpacity(0.15), // Slightly transparent card background
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ...children.map((widget) => Padding( // Add consistent padding to each setting item
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: widget,
+            )).toList(),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildThemeDropdown(SettingsViewModel viewModel) {
-    return _buildDropdown('Tema', viewModel.userSettings!.theme, ['LIGHT', 'DARK', 'SYSTEM'], viewModel.updateTheme);
+    return _buildDropdownSetting(
+      'Tema',
+      Icons.palette,
+      viewModel.userSettings!.theme,
+      ['LIGHT', 'DARK', 'SYSTEM'],
+      viewModel.updateTheme,
+    );
   }
 
   Widget _buildLanguageDropdown(SettingsViewModel viewModel) {
-    return _buildDropdown('Dil', viewModel.userSettings!.language, ['tr', 'en'], viewModel.updateLanguage);
+    return _buildDropdownSetting(
+      'Dil',
+      Icons.language,
+      viewModel.userSettings!.language,
+      ['tr', 'en'],
+      viewModel.updateLanguage,
+    );
   }
 
   Widget _buildStartDayOfWeekDropdown(SettingsViewModel viewModel) {
-    return _buildDropdown('Haftanın Başlangıcı', viewModel.userSettings!.startDayOfWeek, ['MONDAY', 'SUNDAY'], viewModel.updateStartDayOfWeek);
+    return _buildDropdownSetting(
+      'Haftanın Başlangıcı',
+      Icons.calendar_today,
+      viewModel.userSettings!.startDayOfWeek,
+      ['MONDAY', 'SUNDAY'],
+      viewModel.updateStartDayOfWeek,
+    );
   }
 
   Widget _buildDateFormatDropdown(SettingsViewModel viewModel) {
-    return _buildDropdown('Tarih Formatı', viewModel.userSettings!.dateFormat, ['dd/MM/yyyy', 'MM/dd/yyyy'], viewModel.updateDateFormat);
+    return _buildDropdownSetting(
+      'Tarih Formatı',
+      Icons.date_range,
+      viewModel.userSettings!.dateFormat,
+      ['dd/MM/yyyy', 'MM/dd/yyyy'],
+      viewModel.updateDateFormat,
+    );
   }
 
   Widget _buildIs24HourFormatSwitch(SettingsViewModel viewModel) {
-    return _buildSwitch('24 Saat Formatı', viewModel.userSettings!.is24HourFormat ?? true, viewModel.updateIs24HourFormat);
+    return _buildSwitchSetting(
+      '24 Saat Formatı',
+      Icons.access_time,
+      viewModel.userSettings!.is24HourFormat ?? true,
+      viewModel.updateIs24HourFormat,
+    );
   }
 
   Widget _buildEmailNotificationsSwitch(SettingsViewModel viewModel) {
-    return _buildSwitch('E-posta Bildirimleri', viewModel.userSettings!.emailNotificationsEnabled ?? true, viewModel.updateEmailNotificationsEnabled);
+    return _buildSwitchSetting(
+      'E-posta Bildirimleri',
+      Icons.email,
+      viewModel.userSettings!.emailNotificationsEnabled ?? true,
+      viewModel.updateEmailNotificationsEnabled,
+    );
   }
 
   Widget _buildPushNotificationsSwitch(SettingsViewModel viewModel) {
-    return _buildSwitch('Anlık Bildirimler', viewModel.userSettings!.pushNotificationsEnabled ?? true, viewModel.updatePushNotificationsEnabled);
-  }
-
-  Widget _buildReminderTextField(TextEditingController controller, String label) {
-    return TextField(
-      controller: controller,
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.5))),
-        focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-      ),
-      style: const TextStyle(color: Colors.white),
+    return _buildSwitchSetting(
+      'Anlık Bildirimler',
+      Icons.notifications_active,
+      viewModel.userSettings!.pushNotificationsEnabled ?? true,
+      viewModel.updatePushNotificationsEnabled,
     );
   }
-  
+
+  Widget _buildReminderTextField(TextEditingController controller, String label, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white70),
+          prefixIcon: Icon(icon, color: Colors.white70), // Add icon here
+          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.5)), borderRadius: BorderRadius.circular(8.0)),
+          focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.white), borderRadius: BorderRadius.circular(8.0)),
+          contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+        ),
+        style: const TextStyle(color: Colors.white),
+      ),
+    );
+  }
+
   Widget _buildTimezoneDropdown(SettingsViewModel viewModel) {
-    return _buildDropdown('Saat Dilimi', viewModel.userSettings!.timezone, ['Europe/Istanbul', 'Europe/London', 'America/New_York'], viewModel.updateTimezone);
-  }
-
-  Widget _buildDropdown(String label, String? value, List<String> items, ValueChanged<String?> onChanged) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.5))),
-        focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-      ),
-      dropdownColor: Colors.deepPurple.shade400,
-      style: const TextStyle(color: Colors.white),
+    return _buildDropdownSetting(
+      'Saat Dilimi',
+      Icons.access_time_filled,
+      viewModel.userSettings!.timezone,
+      ['Europe/Istanbul', 'Europe/London', 'America/New_York'],
+      viewModel.updateTimezone,
     );
   }
 
-  Widget _buildSwitch(String title, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildDropdownSetting(String label, IconData icon, String? value, List<String> items, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        items: items.map((item) => DropdownMenuItem(value: item, child: Text(item, style: const TextStyle(color: Colors.white)))).toList(),
+        onChanged: onChanged,
+        icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white70),
+          prefixIcon: Icon(icon, color: Colors.white70), // Add icon here
+          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.5)), borderRadius: BorderRadius.circular(8.0)),
+          focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.white), borderRadius: BorderRadius.circular(8.0)),
+          contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+        ),
+        dropdownColor: Colors.deepPurple.shade600, // Make dropdown darker
+        style: const TextStyle(color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildSwitchSetting(String title, IconData icon, bool value, ValueChanged<bool> onChanged) {
     return SwitchListTile(
       title: Text(title, style: const TextStyle(color: Colors.white)),
+      secondary: Icon(icon, color: Colors.white70), // Add icon here
       value: value,
       onChanged: onChanged,
       activeColor: Colors.white,

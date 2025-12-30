@@ -20,68 +20,54 @@ class CategoriesView extends StatelessWidget {
               title: const Text('Kategoriler'),
               elevation: 0,
               backgroundColor: Colors.transparent,
-              titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+              titleTextStyle: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
               iconTheme: const IconThemeData(color: Colors.white),
             ),
             body: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.deepPurple.shade300, Colors.blue.shade400],
+                  colors: [
+                    Colors.deepPurple.shade300,
+                    Colors.blue.shade400,
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
               ),
               child: SafeArea(
-                child: ListView.builder(
+                child: viewModel.categories.isEmpty
+                    ? const Center(
+                  child: Text(
+                    'Hiç kategori yok.',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 16,
+                    ),
+                  ),
+                )
+                    : ListView.builder(
+                  padding: const EdgeInsets.all(16),
                   itemCount: viewModel.categories.length,
                   itemBuilder: (context, index) {
                     final category = viewModel.categories[index];
-                    return Card(
-                      elevation: 4,
-                      color: Colors.white.withOpacity(0.25),
-                      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      child: ListTile(
-                        leading: const Icon(Icons.label_outline, color: Colors.white),
-                        title: Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CategoryDetailView(category: category),
-                            ),
-                          );
-                        },
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              _showCategoryDialog(context, viewModel, category: category);
-                            } else if (value == 'delete') {
-                              _showDeleteConfirmationDialog(context, viewModel, category);
-                            }
-                          },
-                          itemBuilder: (BuildContext context) => [
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Row(children: [Icon(Icons.edit_outlined), SizedBox(width: 8), Text('Düzenle')]),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Row(children: [Icon(Icons.delete_outline), SizedBox(width: 8), Text('Sil')]),
-                            ),
-                          ],
-                          icon: const Icon(Icons.more_vert, color: Colors.white70),
-                        ),
-                      ),
-                    );
+                    return _buildCategoryCard(
+                        context, viewModel, category);
                   },
                 ),
               ),
             ),
             floatingActionButton: FloatingActionButton(
-              onPressed: () => _showCategoryDialog(context, viewModel),
               backgroundColor: Colors.white,
-              child: Icon(Icons.add, color: Colors.deepPurple.shade300),
+              onPressed: () =>
+                  _showCategoryDialog(context, viewModel),
+              child: Icon(Icons.add,
+                  color: Colors.deepPurple.shade400),
             ),
           );
         },
@@ -89,23 +75,126 @@ class CategoriesView extends StatelessWidget {
     );
   }
 
-  void _showCategoryDialog(BuildContext context, CategoryViewModel viewModel, {CategoryResponse? category}) {
-    final nameController = TextEditingController(text: category?.name ?? '');
+  /// 🧊 Category Card
+  Widget _buildCategoryCard(
+      BuildContext context,
+      CategoryViewModel viewModel,
+      CategoryResponse category,
+      ) {
+    return Card(
+      color: Colors.white.withOpacity(0.15),
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape:
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  CategoryDetailView(category: category),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              const Icon(Icons.label_outline,
+                  color: Colors.white70),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  category.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert,
+                    color: Colors.white70),
+                color: Colors.deepPurple.shade600,
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    _showCategoryDialog(
+                      context,
+                      viewModel,
+                      category: category,
+                    );
+                  } else if (value == 'delete') {
+                    _showDeleteConfirmationDialog(
+                        context, viewModel, category);
+                  }
+                },
+                itemBuilder: (_) => [
+                  _popupItem(
+                      Icons.edit_outlined, 'Düzenle', 'edit'),
+                  _popupItem(Icons.delete_outline,
+                      'Sil', 'delete'),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _popupItem(
+      IconData icon, String text, String value) {
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white70),
+          const SizedBox(width: 8),
+          Text(text,
+              style: const TextStyle(color: Colors.white)),
+        ],
+      ),
+    );
+  }
+
+  /// ✏️ Create / Update Dialog
+  void _showCategoryDialog(
+      BuildContext context,
+      CategoryViewModel viewModel, {
+        CategoryResponse? category,
+      }) {
+    final nameController =
+    TextEditingController(text: category?.name ?? '');
+
     showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-          backgroundColor: Colors.deepPurple.shade300.withOpacity(0.9),
-          title: Text(category == null ? 'Yeni Kategori' : 'Kategoriyi Düzenle', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          backgroundColor:
+          Colors.deepPurple.shade300.withOpacity(0.95),
+          title: Text(
+            category == null
+                ? 'Yeni Kategori'
+                : 'Kategoriyi Düzenle',
+            style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold),
+          ),
           content: TextField(
             controller: nameController,
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               labelText: 'Kategori Adı',
-              labelStyle: const TextStyle(color: Colors.white70),
+              labelStyle:
+              const TextStyle(color: Colors.white70),
               enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
+                borderSide:
+                BorderSide(color: Colors.white.withOpacity(0.5)),
               ),
               focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: Colors.white),
@@ -114,7 +203,12 @@ class CategoriesView extends StatelessWidget {
             autofocus: true,
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('İptal', style: TextStyle(color: Colors.white70))),
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext),
+              child: const Text('İptal',
+                  style: TextStyle(color: Colors.white70)),
+            ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -122,11 +216,13 @@ class CategoriesView extends StatelessWidget {
               ),
               onPressed: () {
                 if (nameController.text.isNotEmpty) {
-                  final request = CategoryRequest(name: nameController.text);
+                  final request =
+                  CategoryRequest(name: nameController.text);
                   if (category == null) {
                     viewModel.addCategory(request);
                   } else {
-                    viewModel.updateCategory(category.id, request);
+                    viewModel.updateCategory(
+                        category.id, request);
                   }
                   Navigator.pop(dialogContext);
                 }
@@ -139,22 +235,35 @@ class CategoriesView extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmationDialog(BuildContext context, CategoryViewModel viewModel, CategoryResponse category) {
+  /// 🗑 Delete Dialog
+  void _showDeleteConfirmationDialog(
+      BuildContext context,
+      CategoryViewModel viewModel,
+      CategoryResponse category,
+      ) {
     showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-          backgroundColor: Colors.deepPurple.shade300.withOpacity(0.9),
-          title: const Text('Kategoriyi Sil', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          backgroundColor:
+          Colors.deepPurple.shade300.withOpacity(0.95),
+          title: const Text(
+            'Kategoriyi Sil',
+            style:
+            TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
           content: Text(
             "'${category.name}' kategorisini silmek istediğinizden emin misiniz?",
             style: const TextStyle(color: Colors.white),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('İptal', style: TextStyle(color: Colors.white70)),
+              onPressed: () =>
+                  Navigator.pop(dialogContext),
+              child: const Text('İptal',
+                  style: TextStyle(color: Colors.white70)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
