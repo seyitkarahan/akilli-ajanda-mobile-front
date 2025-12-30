@@ -212,6 +212,16 @@ class ApiService {
     }
   }
 
+  Future<EventResponse?> getEventById(int id) async {
+    final response = await http.get(Uri.parse('$_baseUrl/events/$id'), headers: await _getHeaders());
+    if (response.statusCode == 200) {
+      return EventResponse.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
+    } else {
+      print('Get Event failed: ${response.body}');
+      return null;
+    }
+  }
+
   Future<EventResponse?> createEvent(EventRequest request) async {
     final response = await http.post(Uri.parse('$_baseUrl/events'), headers: await _getHeaders(), body: jsonEncode(request.toJson()));
     if (response.statusCode == 201 || response.statusCode == 200) {

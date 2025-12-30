@@ -8,6 +8,7 @@ import 'package:akilli_ajanda_front/model/task_status.dart';
 import 'package:akilli_ajanda_front/service/storage_service.dart';
 import 'package:akilli_ajanda_front/view/categories_view.dart';
 import 'package:akilli_ajanda_front/view/event_dialog.dart';
+import 'package:akilli_ajanda_front/view/event_notification_page.dart';
 import 'package:akilli_ajanda_front/view/events_view.dart';
 import 'package:akilli_ajanda_front/view/image_gallery_view.dart';
 import 'package:akilli_ajanda_front/view/login_view.dart';
@@ -477,6 +478,17 @@ class _HomePageState extends State<HomePage> {
                             context,
                             MaterialPageRoute(builder: (_) => const EventsView()),
                           ).then((_) => viewModel.fetchInitialData());
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.notifications_active, color: Colors.deepPurple.shade600),
+                        title: Text('Etkinlik Bildirimleri', style: TextStyle(color: Colors.black87)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const EventNotificationPage()),
+                          );
                         },
                       ),
                       ListTile(
