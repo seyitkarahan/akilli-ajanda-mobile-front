@@ -15,6 +15,7 @@ import 'package:akilli_ajanda_front/view/login_view.dart';
 import 'package:akilli_ajanda_front/view/map_view.dart';
 import 'package:akilli_ajanda_front/view/settings_view.dart';
 import 'package:akilli_ajanda_front/view/task_dialog.dart';
+import 'package:akilli_ajanda_front/view/task_notification_page.dart';
 import 'package:akilli_ajanda_front/view/tasks_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -488,6 +489,17 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const EventNotificationPage()),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.edit_notifications_sharp, color: Colors.deepPurple.shade600),
+                        title: Text('Görev Bildirimleri', style: TextStyle(color: Colors.black87)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                              MaterialPageRoute(builder: (_) => const TaskNotificationPage()),
                           );
                         },
                       ),

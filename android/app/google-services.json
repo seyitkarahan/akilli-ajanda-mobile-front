@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "168170333202",
+    "project_id": "akilli-ajanda-flutter",
+    "storage_bucket": "akilli-ajanda-flutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:168170333202:android:dbf59fb74440a3276d64cb",
+        "android_client_info": {
+          "package_name": "com.example.akilli_ajanda_front"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbcFVxLO0NO1rF8Eker03dv6d-zSTjAZU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

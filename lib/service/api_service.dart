@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 import 'package:akilli_ajanda_front/model/importance_level.dart';
 import 'package:akilli_ajanda_front/model/task_status.dart';
@@ -27,6 +28,18 @@ class ApiService {
       "Content-Type": "application/json",
       "Authorization": "Bearer $token",
     };
+  }
+  
+  Future<void> updateDeviceToken(String deviceToken) async {
+    try {
+      await http.post(
+        Uri.parse('$_baseUrl/users/update-device-token'),
+        headers: await _getHeaders(),
+        body: deviceToken,
+      );
+    } catch (e) {
+      print('Device token update failed: $e');
+    }
   }
 
   // --- Auth ---
@@ -153,6 +166,16 @@ class ApiService {
     } else {
       print('Get Tasks failed: ${response.body}');
       return [];
+    }
+  }
+  
+  Future<TaskResponse?> getTaskById(int id) async {
+    final response = await http.get(Uri.parse('$_baseUrl/tasks/$id'), headers: await _getHeaders());
+    if (response.statusCode == 200) {
+      return TaskResponse.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
+    } else {
+      print('Get Task failed: ${response.body}');
+      return null;
     }
   }
 
