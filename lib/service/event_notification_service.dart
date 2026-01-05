@@ -7,7 +7,7 @@ import 'package:dio/dio.dart';
 class EventNotificationService {
   final Dio _dio = Dio();
   final StorageService _storageService = StorageService();
-  static const String _baseUrl = 'http://10.0.2.2:8080/api/notifications/events';
+  static const String _baseUrl = 'http://10.0.2.2:8082/api/notifications/events';
 
   Future<Options> _getOptions() async {
     final token = await _storageService.getToken();

@@ -7,7 +7,7 @@ import 'package:dio/dio.dart';
 class ImageService {
   final Dio _dio = Dio();
   final StorageService _storageService = StorageService();
-  static const String _baseUrl = 'http://10.0.2.2:8080/api/images';
+  static const String _baseUrl = 'http://10.0.2.2:8082/api/images';
 
   Future<Options> _getOptions() async {
     final token = await _storageService.getToken();

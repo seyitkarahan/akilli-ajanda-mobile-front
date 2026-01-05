@@ -19,7 +19,7 @@ import '../model/notification_response.dart';
 import 'storage_service.dart';
 
 class ApiService {
-  final String _baseUrl = "http://10.0.2.2:8080/api";
+  final String _baseUrl = "http://10.0.2.2:8082/api";
   final StorageService _storageService = StorageService();
 
   Future<Map<String, String>> _getHeaders() async {
