@@ -223,7 +223,7 @@ class ImageGalleryView extends StatelessWidget {
               child: Hero(
                 tag: image.id, // For smooth transition to detail view
                 child: Image.network(
-                  'http://10.0.2.2:8080/uploads/' + image.fileName,
+                  'http://10.0.2.2:8082/uploads/' + image.fileName,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, progress) {
                     if (progress == null) return child;

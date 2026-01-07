@@ -36,7 +36,7 @@ class ImageDetailView extends StatelessWidget {
               minScale: 1.0,
               maxScale: 4.0,
               child: Image.network(
-                'http://10.0.2.2:8080/uploads/${image.fileName}',
+                'http://10.0.2.2:8082/uploads/${image.fileName}',
                 fit: BoxFit.contain,
                 loadingBuilder: (context, child, progress) {
                   if (progress == null) return child;
