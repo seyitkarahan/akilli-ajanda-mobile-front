@@ -14,6 +14,7 @@ import 'package:akilli_ajanda_front/view/image_gallery_view.dart';
 import 'package:akilli_ajanda_front/view/login_view.dart';
 import 'package:akilli_ajanda_front/view/map_view.dart';
 import 'package:akilli_ajanda_front/view/settings_view.dart';
+import 'package:akilli_ajanda_front/view/statistics_view.dart';
 import 'package:akilli_ajanda_front/view/task_dialog.dart';
 import 'package:akilli_ajanda_front/view/task_notification_page.dart';
 import 'package:akilli_ajanda_front/view/tasks_view.dart';
@@ -527,6 +528,22 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const ImageGalleryView()),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.pie_chart, color: Colors.deepPurple.shade600),
+                        title: Text('İstatistikler', style: TextStyle(color: Colors.black87)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChangeNotifierProvider.value(
+                                value: viewModel,
+                                child: const StatisticsView(),
+                              ),
+                            ),
                           );
                         },
                       ),
