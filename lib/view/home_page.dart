@@ -555,115 +555,116 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildUpcomingList(HomeViewModel viewModel) {
-  if (_shownListType == _UpcomingListType.none) {
-    return const SizedBox.shrink();
-  }
-
-  final String title;
-  final List<Widget> items;
-  final DateFormat formatter = DateFormat('dd/MM/yyyy HH:mm');
-
-  if (_shownListType == _UpcomingListType.tasks) {
-    title = 'Yaklaşan Görevler';
-    final now = DateTime.now();
-    final upcomingTasks = viewModel.tasks.where((task) {
-      if (task.startTime == null) return false;
-      final difference = task.startTime!.difference(now).inDays;
-      return (task.status == TaskStatus.PENDING || task.status == TaskStatus.IN_PROGRESS) && difference >= 0 && difference <= 3;
-    }).toList();
-
-    if (upcomingTasks.isEmpty) {
-      items = [const ListTile(title: Text('Yaklaşan görev bulunmamaktadır.', style: TextStyle(color: Colors.white)))];
-    } else {
-      items = upcomingTasks.map((task) {
-        final String startTime = formatter.format(task.startTime!);
-        final String endTime = task.endTime != null ? formatter.format(task.endTime!) : 'Belirtilmemiş';
-        final difference = task.startTime!.difference(now);
-        final bool showCountdown = difference.isNegative == false && difference.inHours < 24;
-
-        return Card(
-          color: Colors.white.withOpacity(0.8),
-          child: ListTile(
-            title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Başlangıç: $startTime\nBitiş: $endTime', style: const TextStyle(color: Colors.black54)),
-                if (showCountdown)
-                  Text('Kalan Süre: ${difference.inHours} sa ${difference.inMinutes.remainder(60)} dk', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-              ],
-            ),
-            isThreeLine: true,
-          ),
-        );
-      }).toList();
+    if (_shownListType == _UpcomingListType.none) {
+      return const SizedBox.shrink();
     }
-  } else {
-    title = 'Yaklaşan Etkinlikler';
-    final now = DateTime.now();
-    final upcomingEvents = viewModel.events.where((event) {
-      if (event.startTime == null) return false;
-      final difference = event.startTime!.difference(now).inDays;
-      return difference >= 0 && difference <= 3;
-    }).toList();
 
-    if (upcomingEvents.isEmpty) {
-      items = [const ListTile(title: Text('Yaklaşan etkinlik bulunmamaktadır.', style: TextStyle(color: Colors.white)))];
-    } else {
-      items = upcomingEvents.map((event) {
-        final String startTime = formatter.format(event.startTime!);
-        final String endTime = event.endTime != null ? formatter.format(event.endTime!) : 'Belirtilmemiş';
-        final difference = event.startTime!.difference(now);
-        final bool showCountdown = difference.isNegative == false && difference.inHours < 24;
+    final String title;
+    final List<Widget> items;
+    final String timeFormat = (viewModel.userSettings?.is24HourFormat ?? true) ? 'HH:mm' : 'hh:mm a';
+    final DateFormat formatter = DateFormat('${viewModel.userSettings?.dateFormat ?? 'dd/MM/yyyy'} $timeFormat');
 
-        return Card(
-          color: Colors.white.withOpacity(0.8),
-          child: ListTile(
-            title: Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Başlangıç: $startTime\nBitiş: $endTime', style: const TextStyle(color: Colors.black54)),
-                if (showCountdown)
-                  Text('Kalan Süre: ${difference.inHours} sa ${difference.inMinutes.remainder(60)} dk', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-              ],
-            ),
-            isThreeLine: true,
-          ),
-        );
+    if (_shownListType == _UpcomingListType.tasks) {
+      title = 'Yaklaşan Görevler';
+      final now = DateTime.now();
+      final upcomingTasks = viewModel.tasks.where((task) {
+        if (task.startTime == null) return false;
+        final difference = task.startTime!.difference(now).inDays;
+        return (task.status == TaskStatus.PENDING || task.status == TaskStatus.IN_PROGRESS) && difference >= 0 && difference <= 3;
       }).toList();
-    }
-  }
 
-  return AnimatedContainer(
-    duration: const Duration(milliseconds: 300),
-    margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-    padding: const EdgeInsets.all(12.0),
-    decoration: BoxDecoration(
-      color: Colors.black.withOpacity(0.2),
-      borderRadius: BorderRadius.circular(15),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxHeight: 150,
+      if (upcomingTasks.isEmpty) {
+        items = [const ListTile(title: Text('Yaklaşan görev bulunmamaktadır.', style: TextStyle(color: Colors.white)))];
+      } else {
+        items = upcomingTasks.map((task) {
+          final String startTime = formatter.format(task.startTime!);
+          final String endTime = task.endTime != null ? formatter.format(task.endTime!) : 'Belirtilmemiş';
+          final difference = task.startTime!.difference(now);
+          final bool showCountdown = difference.isNegative == false && difference.inHours < 24;
+
+          return Card(
+            color: Colors.white.withOpacity(0.8),
+            child: ListTile(
+              title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Başlangıç: $startTime\nBitiş: $endTime', style: const TextStyle(color: Colors.black54)),
+                  if (showCountdown)
+                    Text('Kalan Süre: ${difference.inHours} sa ${difference.inMinutes.remainder(60)} dk', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              isThreeLine: true,
+            ),
+          );
+        }).toList();
+      }
+    } else {
+      title = 'Yaklaşan Etkinlikler';
+      final now = DateTime.now();
+      final upcomingEvents = viewModel.events.where((event) {
+        if (event.startTime == null) return false;
+        final difference = event.startTime!.difference(now).inDays;
+        return difference >= 0 && difference <= 3;
+      }).toList();
+
+      if (upcomingEvents.isEmpty) {
+        items = [const ListTile(title: Text('Yaklaşan etkinlik bulunmamaktadır.', style: TextStyle(color: Colors.white)))];
+      } else {
+        items = upcomingEvents.map((event) {
+          final String startTime = formatter.format(event.startTime!);
+          final String endTime = event.endTime != null ? formatter.format(event.endTime!) : 'Belirtilmemiş';
+          final difference = event.startTime!.difference(now);
+          final bool showCountdown = difference.isNegative == false && difference.inHours < 24;
+
+          return Card(
+            color: Colors.white.withOpacity(0.8),
+            child: ListTile(
+              title: Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Başlangıç: $startTime\nBitiş: $endTime', style: const TextStyle(color: Colors.black54)),
+                  if (showCountdown)
+                    Text('Kalan Süre: ${difference.inHours} sa ${difference.inMinutes.remainder(60)} dk', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              isThreeLine: true,
+            ),
+          );
+        }).toList();
+      }
+    }
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          child: ListView(
-            shrinkWrap: true,
-            children: items,
+          const SizedBox(height: 8),
+          ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxHeight: 150,
+            ),
+            child: ListView(
+              shrinkWrap: true,
+              children: items,
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   void _showAddDialog(BuildContext context, HomeViewModel viewModel, DateTime? selectedDate) {
     showDialog(
