@@ -1,6 +1,7 @@
 import 'package:akilli_ajanda_front/model/event_request.dart';
 import 'package:akilli_ajanda_front/model/event_response.dart';
 import 'package:akilli_ajanda_front/model/importance_level.dart';
+import 'package:akilli_ajanda_front/model/user_settings_response.dart';
 import 'package:flutter/material.dart';
 import '../model/category_response.dart';
 import '../model/task_response.dart';
@@ -12,12 +13,14 @@ class HomeViewModel extends ChangeNotifier {
   List<CategoryResponse> _categories = [];
   List<TaskResponse> _tasks = [];
   List<EventResponse> _events = [];
+  UserSettingsResponse? _userSettings;
   bool _isLoading = false;
   int? _selectedCategoryId;
 
   List<CategoryResponse> get categories => _categories;
   List<TaskResponse> get tasks => _tasks;
   List<EventResponse> get events => _events;
+  UserSettingsResponse? get userSettings => _userSettings;
   bool get isLoading => _isLoading;
   int? get selectedCategoryId => _selectedCategoryId;
 
@@ -34,12 +37,18 @@ class HomeViewModel extends ChangeNotifier {
         _apiService.getCategories(),
         _apiService.getTasks(), // Initially load all tasks
         _apiService.getEvents(),
+        _apiService.getUserSettings(),
       ]);
       _categories = results[0] as List<CategoryResponse>;
       _tasks = results[1] as List<TaskResponse>;
       _events = results[2] as List<EventResponse>;
+      _userSettings = results[3] as UserSettingsResponse?;
+      if (_userSettings == null) {
+        _userSettings = UserSettingsResponse(startDayOfWeek: 'MONDAY');
+      }
     } catch (e) {
       print('Error fetching initial data: $e');
+      _userSettings = UserSettingsResponse(startDayOfWeek: 'MONDAY');
     } finally {
       _isLoading = false;
       notifyListeners();
