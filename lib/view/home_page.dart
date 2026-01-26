@@ -107,43 +107,52 @@ class _HomePageState extends State<HomePage> {
                 boxShadow: [
                   BoxShadow(
                     blurRadius: 20,
-                    color: Colors.black.withAlpha(25), // withOpacity(.1)
-                  )
+                    color: Colors.black.withOpacity(0.1),
+                    offset: const Offset(0, -5),
+                  ),
                 ],
               ),
               child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
-                  child: GNav(
-                    rippleColor: Colors.grey[300]!,
-                    hoverColor: Colors.grey[100]!,
-                    gap: 8,
-                    activeColor: Colors.white,
-                    iconSize: 24,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    duration: const Duration(milliseconds: 400),
-                    tabBackgroundColor: Colors.deepPurple.shade300,
-                    color: Colors.black,
-                    tabs: const [
-                      GButton(
-                        icon: Icons.home,
-                        text: 'Ana Sayfa',
-                      ),
-                      GButton(
-                        icon: Icons.task_alt,
-                        text: 'Görevler',
-                      ),
-                      GButton(
-                        icon: Icons.event,
-                        text: 'Etkinlikler',
-                      ),
-                      GButton(
-                        icon: Icons.settings,
-                        text: 'Ayarlar',
-                      ),
-                    ],
-                    selectedIndex: _selectedIndex,
-                    onTabChange: _onItemTapped,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: GNav(
+                      rippleColor: Colors.grey.shade300,
+                      hoverColor: Colors.grey.shade100,
+                      gap: 8,
+                      activeColor: Colors.white,
+                      iconSize: 22,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      duration: const Duration(milliseconds: 400),
+                      tabBackgroundColor: const Color(0xFF6366F1),
+                      color: Colors.grey.shade700,
+                      curve: Curves.easeInOut,
+                      tabs: const [
+                        GButton(
+                          icon: Icons.home_rounded,
+                          text: 'Ana Sayfa',
+                        ),
+                        GButton(
+                          icon: Icons.task_alt_rounded,
+                          text: 'Görevler',
+                        ),
+                        GButton(
+                          icon: Icons.event_rounded,
+                          text: 'Etkinlikler',
+                        ),
+                        GButton(
+                          icon: Icons.settings_rounded,
+                          text: 'Ayarlar',
+                        ),
+                      ],
+                      selectedIndex: _selectedIndex,
+                      onTabChange: _onItemTapped,
+                    ),
                   ),
                 ),
               ),
@@ -158,53 +167,116 @@ class _HomePageState extends State<HomePage> {
   PreferredSizeWidget? _buildAppBar(BuildContext context, HomeViewModel viewModel) {
     if (_selectedIndex == 0) {
       return AppBar(
-        title: const Text('Akıllı Ajanda'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.auto_awesome_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                'Akıllı Ajanda',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontSize: 20,
+                  letterSpacing: -0.5,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
+          ],
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
-        titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-            icon: Icon(
-              _showSmartSuggestions ? Icons.lightbulb : Icons.lightbulb_outline,
-              color: Colors.white,
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: _showSmartSuggestions
+                  ? Colors.white.withOpacity(0.2)
+                  : Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            onPressed: () {
-              setState(() {
-                _showSmartSuggestions = !_showSmartSuggestions;
-              });
-            },
-          ),
-          IconButton(
-            icon: Icon(
-              _calendarController.view == CalendarView.schedule
-                  ? Icons.calendar_month_outlined
-                  : Icons.view_agenda_outlined,
-              color: Colors.white,
+            child: IconButton(
+              icon: Icon(
+                _showSmartSuggestions
+                    ? Icons.lightbulb_rounded
+                    : Icons.lightbulb_outline_rounded,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                setState(() {
+                  _showSmartSuggestions = !_showSmartSuggestions;
+                });
+              },
             ),
-            onPressed: () {
-              setState(() {
-                if (_calendarController.view == CalendarView.schedule) {
-                  _calendarController.view = CalendarView.month;
-                } else {
-                  _calendarController.view = CalendarView.schedule;
-                }
-              });
-            },
           ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () => _showLogoutConfirmationDialog(context),
-          )
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: Icon(
+                _calendarController.view == CalendarView.schedule
+                    ? Icons.calendar_month_rounded
+                    : Icons.view_agenda_rounded,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                setState(() {
+                  if (_calendarController.view == CalendarView.schedule) {
+                    _calendarController.view = CalendarView.month;
+                  } else {
+                    _calendarController.view = CalendarView.schedule;
+                  }
+                });
+              },
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.logout_rounded, color: Colors.white),
+              onPressed: () => _showLogoutConfirmationDialog(context),
+            ),
+          ),
         ],
       );
     } else {
-        return AppBar(
-        title: Text(['Ana Sayfa', 'Görevler', 'Etkinlikler', 'Ayarlar'][_selectedIndex]),
+      return AppBar(
+        title: Text(
+          ['Ana Sayfa', 'Görevler', 'Etkinlikler', 'Ayarlar'][_selectedIndex],
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: 22,
+            letterSpacing: -0.5,
+          ),
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
-        titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
-        iconTheme: const IconThemeData(color: Colors.white), 
+        iconTheme: const IconThemeData(color: Colors.white),
       );
     }
   }
@@ -273,96 +345,276 @@ class _HomePageState extends State<HomePage> {
     }
 
     final timeFormat = (viewModel.userSettings?.is24HourFormat ?? true) ? 'HH:mm' : 'hh:mm a';
-    final dateFormat = DateFormat('E, d MMM $timeFormat');
+    final dateFormat = DateFormat('E, d MMM $timeFormat', 'tr_TR');
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Text(
-            'Akıllı Öneriler',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-        ),
-        SizedBox(
-          height: 150, // Increased height
-          child: PageView.builder(
-            controller: PageController(viewportFraction: 0.9),
-            itemCount: freeSlots.length,
-            itemBuilder: (context, index) {
-              final slot = freeSlots[index];
-              final startTime = slot['start']!;
-              final endTime = slot['end']!;
-
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.deepPurple.shade400, Colors.blue.shade500],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                   ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Boş zamanınız var!',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+                child: const Icon(
+                  Icons.lightbulb_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Akıllı Öneriler',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 180,
+            child: PageView.builder(
+              controller: PageController(viewportFraction: 0.92),
+              itemCount: freeSlots.length,
+              itemBuilder: (context, index) {
+                final slot = freeSlots[index];
+                final startTime = slot['start']!;
+                final endTime = slot['end']!;
+
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 6.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF6366F1).withOpacity(0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                        spreadRadius: 2,
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '${dateFormat.format(startTime)} - ${dateFormat.format(endTime)}',
-                        style: const TextStyle(fontSize: 15, color: Colors.white70),
-                      ),
-                      const Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () => _showAddTaskDialog(context, viewModel, startTime),
-                            icon: const Icon(Icons.add_task, size: 18),
-                            label: const Text('Görev Ekle'),
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.deepPurple, backgroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          ElevatedButton.icon(
-                            onPressed: () => _showAddEventDialog(context, viewModel, startTime),
-                            icon: const Icon(Icons.event_available, size: 18),
-                            label: const Text('Etkinlik Ekle'),
-                             style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.deepPurple, backgroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
                     ],
                   ),
-                ),
-              );
-            },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Stack(
+                      children: [
+                        // Gradient background
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFF6366F1),
+                                const Color(0xFF8B5CF6),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.schedule_rounded,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Expanded(
+                                    child: Text(
+                                      'Boş Zamanınız Var!',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                        color: Colors.white,
+                                        letterSpacing: -0.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.access_time_rounded,
+                                          size: 16,
+                                          color: Colors.white.withOpacity(0.9),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            dateFormat.format(startTime),
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.white.withOpacity(0.95),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.flag_rounded,
+                                          size: 16,
+                                          color: Colors.white.withOpacity(0.9),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            dateFormat.format(endTime),
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.white.withOpacity(0.95),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Spacer(),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(14),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () => _showAddTaskDialog(context, viewModel, startTime),
+                                          borderRadius: BorderRadius.circular(14),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.add_task_rounded,
+                                                  size: 18,
+                                                  color: const Color(0xFF6366F1),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  'Görev',
+                                                  style: TextStyle(
+                                                    color: const Color(0xFF6366F1),
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(14),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () => _showAddEventDialog(context, viewModel, startTime),
+                                          borderRadius: BorderRadius.circular(14),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.event_available_rounded,
+                                                  size: 18,
+                                                  color: const Color(0xFF6366F1),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  'Etkinlik',
+                                                  style: TextStyle(
+                                                    color: const Color(0xFF6366F1),
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -370,27 +622,61 @@ class _HomePageState extends State<HomePage> {
     final _AppointmentDataSource dataSource = _AppointmentDataSource(viewModel.tasks, viewModel.events, viewModel.categories);
     return RefreshIndicator(
       onRefresh: viewModel.fetchInitialData,
+      color: const Color(0xFF6366F1),
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (_showSmartSuggestions) _buildSmartSuggestions(viewModel),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-              child: Text(
-                'Takvim',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.calendar_today_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Takvim',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ],
               ),
             ),
             Container(
               height: MediaQuery.of(context).size.height * 0.6,
-              margin: const EdgeInsets.symmetric(horizontal: 16.0),
+              margin: const EdgeInsets.symmetric(horizontal: 20.0),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
-              child: SfCalendar(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: SfCalendar(
                 controller: _calendarController,
                 dataSource: dataSource,
                 firstDayOfWeek: viewModel.userSettings?.startDayOfWeek == 'SUNDAY' ? 7 : 1,
@@ -457,66 +743,168 @@ class _HomePageState extends State<HomePage> {
                   if (details.targetElement == CalendarElement.calendarCell) {
                     if (viewModel.categories.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
+                        SnackBar(
+                          content: const Row(
+                            children: [
+                              Icon(Icons.info_outline, color: Colors.white),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Text('Lütfen önce bir kategori oluşturun.'),
+                              ),
+                            ],
+                          ),
+                          backgroundColor: Colors.orange,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       );
                     } else {
                       _showAddDialog(context, viewModel, details.date);
                     }
                   }
                 },
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.task_alt),
-                     onPressed: () {
-                      setState(() {
-                        if (_shownListType == _UpcomingListType.tasks) {
-                          _shownListType = _UpcomingListType.none;
-                        } else {
-                          _shownListType = _UpcomingListType.tasks;
-                        }
-                      });
-                    },
-                    label: const Text('Yaklaşan Görevler'),
-                    style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.blue.shade400,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF3B82F6),
+                            const Color(0xFF2563EB),
+                          ],
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
-                     ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF3B82F6).withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              if (_shownListType == _UpcomingListType.tasks) {
+                                _shownListType = _UpcomingListType.none;
+                              } else {
+                                _shownListType = _UpcomingListType.tasks;
+                              }
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _shownListType == _UpcomingListType.tasks
+                                      ? Icons.task_alt_rounded
+                                      : Icons.task_alt_outlined,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    'Yaklaşan Görevler',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.event_available),
-                    onPressed: () {
-                      setState(() {
-                        if (_shownListType == _UpcomingListType.events) {
-                          _shownListType = _UpcomingListType.none;
-                        } else {
-                          _shownListType = _UpcomingListType.events;
-                        }
-                      });
-                    },
-                    label: const Text('Yaklaşan Etkinlikler'),
-                     style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.deepPurple.shade300,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF6366F1),
+                            const Color(0xFF4F46E5),
+                          ],
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
-                     ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF6366F1).withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              if (_shownListType == _UpcomingListType.events) {
+                                _shownListType = _UpcomingListType.none;
+                              } else {
+                                _shownListType = _UpcomingListType.events;
+                              }
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _shownListType == _UpcomingListType.events
+                                      ? Icons.event_rounded
+                                      : Icons.event_outlined,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    'Yaklaşan Etkinlikler',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-             _buildUpcomingList(viewModel),
+            _buildUpcomingList(viewModel),
           ],
         ),
       ),
@@ -526,22 +914,44 @@ class _HomePageState extends State<HomePage> {
   Widget? _buildFab(BuildContext context, HomeViewModel viewModel) {
     if (_selectedIndex == 0) {
       return SpeedDial(
-        icon: Icons.add,
-        activeIcon: Icons.close,
+        icon: Icons.add_rounded,
+        activeIcon: Icons.close_rounded,
         backgroundColor: Colors.white,
-        foregroundColor: Colors.deepPurple.shade300,
+        foregroundColor: const Color(0xFF6366F1),
         overlayColor: Colors.black,
         overlayOpacity: 0.5,
+        elevation: 8,
+        spacing: 12,
         children: [
           SpeedDialChild(
-            child: const Icon(Icons.task, color: Colors.white),
-            backgroundColor: Colors.blue.shade400,
+            child: const Icon(Icons.task_alt_rounded, color: Colors.white),
+            backgroundColor: const Color(0xFF3B82F6),
             label: 'Görev Ekle',
-            labelStyle: const TextStyle(fontSize: 16),
+            labelStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+            labelBackgroundColor: const Color(0xFF3B82F6),
             onTap: () {
               if (viewModel.categories.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
+                  SnackBar(
+                    content: const Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.white),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text('Lütfen önce bir kategori oluşturun.'),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.orange,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 );
               } else {
                 _showAddTaskDialog(context, viewModel, null);
@@ -549,14 +959,34 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           SpeedDialChild(
-            child: const Icon(Icons.event, color: Colors.white),
-            backgroundColor: Colors.deepPurple.shade300,
+            child: const Icon(Icons.event_rounded, color: Colors.white),
+            backgroundColor: const Color(0xFF6366F1),
             label: 'Etkinlik Ekle',
-            labelStyle: const TextStyle(fontSize: 16),
+            labelStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+            labelBackgroundColor: const Color(0xFF6366F1),
             onTap: () {
-               if (viewModel.categories.isEmpty) {
+              if (viewModel.categories.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Lütfen önce bir kategori oluşturun.')),
+                  SnackBar(
+                    content: const Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.white),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text('Lütfen önce bir kategori oluşturun.'),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.orange,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 );
               } else {
                 _showAddEventDialog(context, viewModel, null);
@@ -575,154 +1005,191 @@ class _HomePageState extends State<HomePage> {
       child: Container(
         color: Colors.transparent,
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Align(
             alignment: Alignment.centerLeft,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 8.0),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(24),
                 child: Container(
-                  width: 300,
+                  width: 320,
                   decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(217), // withOpacity(0.85)
+                    color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withAlpha(64), // withOpacity(0.25)
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
-                  child: ListView(
-                    padding: EdgeInsets.zero,
+                  child: Column(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.deepPurple.shade300, Colors.deepPurple.shade400],
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
-                            Icon(Icons.menu, color: Colors.white, size: 28),
-                            SizedBox(width: 12),
-                            Expanded(
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.menu_rounded, color: Colors.white, size: 24),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
                               child: Text(
                                 'Menü',
-                                style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.5,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      ListTile(
-                        leading: Icon(Icons.category, color: Colors.deepPurple.shade600),
-                        title: const Text('Kategoriler', style: TextStyle(color: Colors.black87)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const CategoriesView()),
-                          ).then((_) => viewModel.fetchInitialData());
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.task, color: Colors.deepPurple.shade600),
-                        title: const Text('Görevler', style: TextStyle(color: Colors.black87)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const TasksView()),
-                          ).then((_) => viewModel.fetchInitialData());
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.event, color: Colors.deepPurple.shade600),
-                        title: const Text('Etkinlikler', style: TextStyle(color: Colors.black87)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const EventsView()),
-                          ).then((_) => viewModel.fetchInitialData());
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.notifications_active, color: Colors.deepPurple.shade600),
-                        title: const Text('Etkinlik Bildirimleri', style: TextStyle(color: Colors.black87)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const EventNotificationPage()),
-                          );
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.edit_notifications_sharp, color: Colors.deepPurple.shade600),
-                        title: const Text('Görev Bildirimleri', style: TextStyle(color: Colors.black87)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                              MaterialPageRoute(builder: (_) => const TaskNotificationPage()),
-                          );
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.map, color: Colors.deepPurple.shade600),
-                        title: const Text('Etkinlik Haritası', style: TextStyle(color: Colors.black87)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => MapView(viewModel: viewModel)),
-                          );
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.photo_album, color: Colors.deepPurple.shade600),
-                        title: const Text('Resim Galerisi', style: TextStyle(color: Colors.black87)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const ImageGalleryView()),
-                          );
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.pie_chart, color: Colors.deepPurple.shade600),
-                        title: const Text('İstatistikler', style: TextStyle(color: Colors.black87)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ChangeNotifierProvider.value(
-                                value: viewModel,
-                                child: const StatisticsView(),
-                              ),
+                      Expanded(
+                        child: ListView(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          children: [
+                            _buildDrawerItem(
+                              context,
+                              icon: Icons.category_rounded,
+                              title: 'Kategoriler',
+                              color: const Color(0xFF6366F1),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const CategoriesView()),
+                                ).then((_) => viewModel.fetchInitialData());
+                              },
                             ),
-                          );
-                        },
+                            _buildDrawerItem(
+                              context,
+                              icon: Icons.task_alt_rounded,
+                              title: 'Görevler',
+                              color: const Color(0xFF3B82F6),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const TasksView()),
+                                ).then((_) => viewModel.fetchInitialData());
+                              },
+                            ),
+                            _buildDrawerItem(
+                              context,
+                              icon: Icons.event_rounded,
+                              title: 'Etkinlikler',
+                              color: const Color(0xFF8B5CF6),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const EventsView()),
+                                ).then((_) => viewModel.fetchInitialData());
+                              },
+                            ),
+                            _buildDrawerItem(
+                              context,
+                              icon: Icons.notifications_active_rounded,
+                              title: 'Etkinlik Bildirimleri',
+                              color: const Color(0xFFF59E0B),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const EventNotificationPage()),
+                                );
+                              },
+                            ),
+                            _buildDrawerItem(
+                              context,
+                              icon: Icons.edit_notifications_rounded,
+                              title: 'Görev Bildirimleri',
+                              color: const Color(0xFFEC4899),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const TaskNotificationPage()),
+                                );
+                              },
+                            ),
+                            _buildDrawerItem(
+                              context,
+                              icon: Icons.map_rounded,
+                              title: 'Etkinlik Haritası',
+                              color: const Color(0xFF10B981),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => MapView(viewModel: viewModel)),
+                                );
+                              },
+                            ),
+                            _buildDrawerItem(
+                              context,
+                              icon: Icons.photo_library_rounded,
+                              title: 'Resim Galerisi',
+                              color: const Color(0xFF14B8A6),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const ImageGalleryView()),
+                                );
+                              },
+                            ),
+                            _buildDrawerItem(
+                              context,
+                              icon: Icons.pie_chart_rounded,
+                              title: 'İstatistikler',
+                              color: const Color(0xFFEF4444),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ChangeNotifierProvider.value(
+                                      value: viewModel,
+                                      child: const StatisticsView(),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const Divider(height: 32, indent: 20, endIndent: 20),
+                            _buildDrawerItem(
+                              context,
+                              icon: Icons.settings_rounded,
+                              title: 'Ayarlar',
+                              color: const Color(0xFF6B7280),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const SettingsView()),
+                                ).then((_) => viewModel.fetchInitialData());
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                      const Divider(),
-                      ListTile(
-                        leading: Icon(Icons.settings, color: Colors.deepPurple.shade600),
-                        title: const Text('Ayarlar', style: TextStyle(color: Colors.black87)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const SettingsView()),
-                          ).then((_) => viewModel.fetchInitialData());
-                        },
-                      ),
-                      const SizedBox(height: 8),
                     ],
                   ),
                 ),
@@ -734,6 +1201,53 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildDrawerItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [color, color.withOpacity(0.7)],
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: Colors.white, size: 20),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: Colors.grey.shade900,
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+        ),
+        trailing: Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: 16,
+          color: Colors.grey.shade400,
+        ),
+        onTap: onTap,
+      ),
+    );
+  }
+
   Widget _buildUpcomingList(HomeViewModel viewModel) {
     if (_shownListType == _UpcomingListType.none) {
       return const SizedBox.shrink();
@@ -741,11 +1255,15 @@ class _HomePageState extends State<HomePage> {
 
     final String title;
     final List<Widget> items;
+    final Color primaryColor;
+    final IconData titleIcon;
     final String timeFormat = (viewModel.userSettings?.is24HourFormat ?? true) ? 'HH:mm' : 'hh:mm a';
     final DateFormat formatter = DateFormat(('${viewModel.userSettings?.dateFormat ?? 'dd/MM/yyyy'}') + (' $timeFormat'));
 
     if (_shownListType == _UpcomingListType.tasks) {
       title = 'Yaklaşan Görevler';
+      primaryColor = const Color(0xFF3B82F6);
+      titleIcon = Icons.task_alt_rounded;
       final now = DateTime.now();
       final upcomingTasks = viewModel.tasks.where((task) {
         if (task.startTime == null) return false;
@@ -754,33 +1272,124 @@ class _HomePageState extends State<HomePage> {
       }).toList();
 
       if (upcomingTasks.isEmpty) {
-        items = [const ListTile(title: Text('Yaklaşan görev bulunmamaktadır.', style: TextStyle(color: Colors.white)))];
+        items = [
+          Container(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: Text(
+                'Yaklaşan görev bulunmamaktadır.',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ];
       } else {
         items = upcomingTasks.map((task) {
           final String startTime = formatter.format(task.startTime!);
           final String endTime = task.endTime != null ? formatter.format(task.endTime!) : 'Belirtilmemiş';
-          final difference = task.startTime!.difference(now);
+          final difference = task.startTime!.difference(DateTime.now());
           final bool showCountdown = !difference.isNegative && difference.inHours < 24;
 
-          return Card(
-            color: Colors.white.withAlpha(204), // withOpacity(0.8)
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: ListTile(
-              title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Başlangıç: $startTime\nBitiş: $endTime', style: const TextStyle(color: Colors.black54)),
-                  if (showCountdown)
-                    Text('Kalan Süre: ${difference.inHours} sa ${difference.inMinutes.remainder(60)} dk', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                ],
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.task_alt_rounded,
+                  color: primaryColor,
+                  size: 20,
+                ),
               ),
-              isThreeLine: true,
+              title: Text(
+                task.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.access_time_rounded, size: 12, color: Colors.grey.shade600),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Başlangıç: $startTime',
+                          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.flag_rounded, size: 12, color: Colors.grey.shade600),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Bitiş: $endTime',
+                          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    if (showCountdown) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.timer_rounded, size: 12, color: Colors.red.shade600),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Kalan: ${difference.inHours} sa ${difference.inMinutes.remainder(60)} dk',
+                              style: TextStyle(
+                                color: Colors.red.shade600,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           );
         }).toList();
       }
     } else {
       title = 'Yaklaşan Etkinlikler';
+      primaryColor = const Color(0xFF6366F1);
+      titleIcon = Icons.event_rounded;
       final now = DateTime.now();
       final upcomingEvents = viewModel.events.where((event) {
         final difference = event.startTime.difference(now).inDays;
@@ -788,27 +1397,116 @@ class _HomePageState extends State<HomePage> {
       }).toList();
 
       if (upcomingEvents.isEmpty) {
-        items = [const ListTile(title: Text('Yaklaşan etkinlik bulunmamaktadır.', style: TextStyle(color: Colors.white)))];
+        items = [
+          Container(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: Text(
+                'Yaklaşan etkinlik bulunmamaktadır.',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ];
       } else {
         items = upcomingEvents.map((event) {
           final String startTime = formatter.format(event.startTime);
           final String endTime = formatter.format(event.endTime);
-          final difference = event.startTime.difference(now);
+          final difference = event.startTime.difference(DateTime.now());
           final bool showCountdown = !difference.isNegative && difference.inHours < 24;
 
-          return Card(
-            color: Colors.white.withAlpha(204), // withOpacity(0.8)
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: ListTile(
-              title: Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Başlangıç: $startTime\nBitiş: $endTime', style: const TextStyle(color: Colors.black54)),
-                  if (showCountdown)
-                    Text('Kalan Süre: ${difference.inHours} sa ${difference.inMinutes.remainder(60)} dk', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                ],
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.event_rounded,
+                  color: primaryColor,
+                  size: 20,
+                ),
               ),
-              isThreeLine: true,
+              title: Text(
+                event.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.access_time_rounded, size: 12, color: Colors.grey.shade600),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Başlangıç: $startTime',
+                          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.flag_rounded, size: 12, color: Colors.grey.shade600),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Bitiş: $endTime',
+                          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    if (showCountdown) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.timer_rounded, size: 12, color: Colors.red.shade600),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Kalan: ${difference.inHours} sa ${difference.inMinutes.remainder(60)} dk',
+                              style: TextStyle(
+                                color: Colors.red.shade600,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           );
         }).toList();
@@ -817,23 +1515,60 @@ class _HomePageState extends State<HomePage> {
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      padding: const EdgeInsets.all(12.0),
+      margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+      padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
-        color: Colors.black.withAlpha(51), // withOpacity(0.2)
-        borderRadius: BorderRadius.circular(15),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primaryColor, primaryColor.withOpacity(0.7)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  titleIcon,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Color(0xFF1F2937),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           ConstrainedBox(
             constraints: const BoxConstraints(
-              maxHeight: 150,
+              maxHeight: 200,
             ),
             child: ListView(
               shrinkWrap: true,
@@ -849,30 +1584,126 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-          backgroundColor: Colors.deepPurple.shade300.withAlpha(230), // withOpacity(0.9)
-          title: const Text('Ne eklemek istersiniz?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.task, color: Colors.white),
-                title: const Text('Görev', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(dialogContext);
-                  _showAddTaskDialog(context, viewModel, selectedDate);
-                },
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Ne eklemek istersiniz?',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFF3B82F6).withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(16),
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.task_alt_rounded, color: Colors.white, size: 24),
+                      ),
+                      title: const Text(
+                        'Görev',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Color(0xFF3B82F6)),
+                      onTap: () {
+                        Navigator.pop(dialogContext);
+                        _showAddTaskDialog(context, viewModel, selectedDate);
+                      },
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6366F1).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFF6366F1).withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(16),
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.event_rounded, color: Colors.white, size: 24),
+                      ),
+                      title: const Text(
+                        'Etkinlik',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Color(0xFF6366F1)),
+                      onTap: () {
+                        Navigator.pop(dialogContext);
+                        _showAddEventDialog(context, viewModel, selectedDate);
+                      },
+                    ),
+                  ),
+                ],
               ),
-              ListTile(
-                leading: const Icon(Icons.event, color: Colors.white),
-                title: const Text('Etkinlik', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(dialogContext);
-                  _showAddEventDialog(context, viewModel, selectedDate);
-                },
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -883,28 +1714,117 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-          backgroundColor: Colors.deepPurple.shade300.withAlpha(230), // withOpacity(0.9)
-          title: const Text('Çıkış Yap', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          content: const Text('Çıkış yapmak istediğinizden emin misiniz?', style: TextStyle(color: Colors.white)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('İptal', style: TextStyle(color: Colors.white70)),
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.red,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.logout_rounded,
+                      color: Colors.red,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Çıkış Yap',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Çıkış yapmak istediğinizden emin misiniz?',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey.shade600,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            side: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          child: Text(
+                            'İptal',
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.pop(dialogContext);
+                              logout(context);
+                            },
+                            child: const Text(
+                              'Çıkış Yap',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                logout(context);
-              },
-              child: const Text('Çıkış Yap'),
             ),
-          ],
+          ),
         );
       },
     );
@@ -936,11 +1856,35 @@ class _HomePageState extends State<HomePage> {
       if (!mounted) return;
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Görev başarıyla eklendi.'), backgroundColor: Colors.green),
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(child: Text('Görev başarıyla eklendi.')),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(16),
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Görev eklenirken bir hata oluştu.'), backgroundColor: Colors.red),
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.error, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(child: Text('Görev eklenirken bir hata oluştu.')),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(16),
+          ),
         );
       }
     }
@@ -958,11 +1902,35 @@ class _HomePageState extends State<HomePage> {
       if (!mounted) return;
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Etkinlik başarıyla eklendi.'), backgroundColor: Colors.green),
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(child: Text('Etkinlik başarıyla eklendi.')),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(16),
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Etkinlik eklenirken bir hata oluştu.'), backgroundColor: Colors.red),
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.error, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(child: Text('Etkinlik eklenirken bir hata oluştu.')),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(16),
+          ),
         );
       }
     }
