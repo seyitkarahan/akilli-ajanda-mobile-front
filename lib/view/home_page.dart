@@ -29,6 +29,13 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 enum _UpcomingListType { none, tasks, events }
 
+class _BusySlot {
+  final DateTime startTime;
+  final DateTime endTime;
+
+  _BusySlot({required this.startTime, required this.endTime});
+}
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -41,6 +48,7 @@ class _HomePageState extends State<HomePage> {
   late CalendarController _calendarController;
   _UpcomingListType _shownListType = _UpcomingListType.none;
   int _selectedIndex = 0;
+  bool _showSmartSuggestions = false;
 
   @override
   void initState() {
@@ -57,6 +65,7 @@ class _HomePageState extends State<HomePage> {
 
   void logout(BuildContext context) async {
     await StorageService().removeToken();
+    if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const LoginView()),
@@ -98,7 +107,7 @@ class _HomePageState extends State<HomePage> {
                 boxShadow: [
                   BoxShadow(
                     blurRadius: 20,
-                    color: Colors.black.withOpacity(.1),
+                    color: Colors.black.withAlpha(25), // withOpacity(.1)
                   )
                 ],
               ),
@@ -157,6 +166,17 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: Icon(
+              _showSmartSuggestions ? Icons.lightbulb : Icons.lightbulb_outline,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              setState(() {
+                _showSmartSuggestions = !_showSmartSuggestions;
+              });
+            },
+          ),
+          IconButton(
+            icon: Icon(
               _calendarController.view == CalendarView.schedule
                   ? Icons.calendar_month_outlined
                   : Icons.view_agenda_outlined,
@@ -204,6 +224,148 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  List<Map<String, DateTime>> _findFreeTimeSlots(List<TaskResponse> tasks, List<EventResponse> events) {
+    final busySlots = <_BusySlot>[];
+    for (var task in tasks) {
+      if (task.startTime != null && task.endTime != null) {
+        busySlots.add(_BusySlot(startTime: task.startTime!, endTime: task.endTime!));
+      }
+    }
+    for (var event in events) {
+        busySlots.add(_BusySlot(startTime: event.startTime, endTime: event.endTime));
+    }
+
+    busySlots.sort((a, b) => a.startTime.compareTo(b.startTime));
+
+    final freeSlots = <Map<String, DateTime>>[];
+    final now = DateTime.now();
+    DateTime searchStart = now;
+    final DateTime searchEnd = DateTime(now.year, now.month, now.day).add(const Duration(days: 2));
+
+    for (final slot in busySlots) {
+      if (slot.endTime.isBefore(searchStart)) continue;
+      if (slot.startTime.isAfter(searchStart)) {
+        final gapDuration = slot.startTime.difference(searchStart);
+        if (gapDuration.inMinutes >= 60) {
+          freeSlots.add({'start': searchStart, 'end': slot.startTime});
+        }
+      }
+      if(slot.endTime.isAfter(searchStart)) {
+          searchStart = slot.endTime;
+      }
+    }
+
+    if (searchStart.isBefore(searchEnd)) {
+        final gapDuration = searchEnd.difference(searchStart);
+         if (gapDuration.inMinutes >= 60) {
+            freeSlots.add({'start': searchStart, 'end': searchEnd});
+         }
+    }
+
+    return freeSlots;
+  }
+
+  Widget _buildSmartSuggestions(HomeViewModel viewModel) {
+    final freeSlots = _findFreeTimeSlots(viewModel.tasks, viewModel.events);
+
+    if (freeSlots.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final timeFormat = (viewModel.userSettings?.is24HourFormat ?? true) ? 'HH:mm' : 'hh:mm a';
+    final dateFormat = DateFormat('E, d MMM $timeFormat');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Text(
+            'Akıllı Öneriler',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+        ),
+        SizedBox(
+          height: 150, // Increased height
+          child: PageView.builder(
+            controller: PageController(viewportFraction: 0.9),
+            itemCount: freeSlots.length,
+            itemBuilder: (context, index) {
+              final slot = freeSlots[index];
+              final startTime = slot['start']!;
+              final endTime = slot['end']!;
+
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.deepPurple.shade400, Colors.blue.shade500],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Boş zamanınız var!',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '${dateFormat.format(startTime)} - ${dateFormat.format(endTime)}',
+                        style: const TextStyle(fontSize: 15, color: Colors.white70),
+                      ),
+                      const Spacer(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () => _showAddTaskDialog(context, viewModel, startTime),
+                            icon: const Icon(Icons.add_task, size: 18),
+                            label: const Text('Görev Ekle'),
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.deepPurple, backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ElevatedButton.icon(
+                            onPressed: () => _showAddEventDialog(context, viewModel, startTime),
+                            icon: const Icon(Icons.event_available, size: 18),
+                            label: const Text('Etkinlik Ekle'),
+                             style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.deepPurple, backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildCalendarPage(HomeViewModel viewModel) {
     final _AppointmentDataSource dataSource = _AppointmentDataSource(viewModel.tasks, viewModel.events, viewModel.categories);
     return RefreshIndicator(
@@ -213,6 +375,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (_showSmartSuggestions) _buildSmartSuggestions(viewModel),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
               child: Text(
@@ -232,6 +395,8 @@ class _HomePageState extends State<HomePage> {
                 dataSource: dataSource,
                 firstDayOfWeek: viewModel.userSettings?.startDayOfWeek == 'SUNDAY' ? 7 : 1,
                 backgroundColor: Colors.transparent,
+                todayTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                todayHighlightColor: Colors.blue,
                 headerStyle: const CalendarHeaderStyle(
                   textStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
                   backgroundColor: Colors.transparent,
@@ -247,7 +412,6 @@ class _HomePageState extends State<HomePage> {
                     textStyle: TextStyle(color: Colors.black),
                     trailingDatesTextStyle: TextStyle(color: Colors.grey),
                     leadingDatesTextStyle: TextStyle(color: Colors.grey),
-                    todayTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     todayBackgroundColor: Colors.blue,
                     backgroundColor: Colors.transparent,
                   ),
@@ -284,12 +448,11 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 selectionDecoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.3),
+                  color: Colors.blue.withAlpha(77), // withOpacity(0.3)
                   border: Border.all(color: Colors.blue, width: 2),
                   borderRadius: const BorderRadius.all(Radius.circular(50)),
                   shape: BoxShape.rectangle,
                 ),
-                todayHighlightColor: Colors.blue,
                 onTap: (CalendarTapDetails details) {
                   if (details.targetElement == CalendarElement.calendarCell) {
                     if (viewModel.categories.isEmpty) {
@@ -422,10 +585,10 @@ class _HomePageState extends State<HomePage> {
                 child: Container(
                   width: 300,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.85),
+                    color: Colors.white.withAlpha(217), // withOpacity(0.85)
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.25),
+                        color: Colors.black.withAlpha(64), // withOpacity(0.25)
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -456,7 +619,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       ListTile(
                         leading: Icon(Icons.category, color: Colors.deepPurple.shade600),
-                        title: Text('Kategoriler', style: TextStyle(color: Colors.black87)),
+                        title: const Text('Kategoriler', style: TextStyle(color: Colors.black87)),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
@@ -467,7 +630,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       ListTile(
                         leading: Icon(Icons.task, color: Colors.deepPurple.shade600),
-                        title: Text('Görevler', style: TextStyle(color: Colors.black87)),
+                        title: const Text('Görevler', style: TextStyle(color: Colors.black87)),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
@@ -478,7 +641,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       ListTile(
                         leading: Icon(Icons.event, color: Colors.deepPurple.shade600),
-                        title: Text('Etkinlikler', style: TextStyle(color: Colors.black87)),
+                        title: const Text('Etkinlikler', style: TextStyle(color: Colors.black87)),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
@@ -489,7 +652,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       ListTile(
                         leading: Icon(Icons.notifications_active, color: Colors.deepPurple.shade600),
-                        title: Text('Etkinlik Bildirimleri', style: TextStyle(color: Colors.black87)),
+                        title: const Text('Etkinlik Bildirimleri', style: TextStyle(color: Colors.black87)),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
@@ -500,7 +663,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       ListTile(
                         leading: Icon(Icons.edit_notifications_sharp, color: Colors.deepPurple.shade600),
-                        title: Text('Görev Bildirimleri', style: TextStyle(color: Colors.black87)),
+                        title: const Text('Görev Bildirimleri', style: TextStyle(color: Colors.black87)),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
@@ -511,7 +674,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       ListTile(
                         leading: Icon(Icons.map, color: Colors.deepPurple.shade600),
-                        title: Text('Etkinlik Haritası', style: TextStyle(color: Colors.black87)),
+                        title: const Text('Etkinlik Haritası', style: TextStyle(color: Colors.black87)),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
@@ -522,7 +685,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       ListTile(
                         leading: Icon(Icons.photo_album, color: Colors.deepPurple.shade600),
-                        title: Text('Resim Galerisi', style: TextStyle(color: Colors.black87)),
+                        title: const Text('Resim Galerisi', style: TextStyle(color: Colors.black87)),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
@@ -533,7 +696,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       ListTile(
                         leading: Icon(Icons.pie_chart, color: Colors.deepPurple.shade600),
-                        title: Text('İstatistikler', style: TextStyle(color: Colors.black87)),
+                        title: const Text('İstatistikler', style: TextStyle(color: Colors.black87)),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
@@ -550,7 +713,7 @@ class _HomePageState extends State<HomePage> {
                       const Divider(),
                       ListTile(
                         leading: Icon(Icons.settings, color: Colors.deepPurple.shade600),
-                        title: Text('Ayarlar', style: TextStyle(color: Colors.black87)),
+                        title: const Text('Ayarlar', style: TextStyle(color: Colors.black87)),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
@@ -579,7 +742,7 @@ class _HomePageState extends State<HomePage> {
     final String title;
     final List<Widget> items;
     final String timeFormat = (viewModel.userSettings?.is24HourFormat ?? true) ? 'HH:mm' : 'hh:mm a';
-    final DateFormat formatter = DateFormat('${viewModel.userSettings?.dateFormat ?? 'dd/MM/yyyy'} $timeFormat');
+    final DateFormat formatter = DateFormat(('${viewModel.userSettings?.dateFormat ?? 'dd/MM/yyyy'}') + (' $timeFormat'));
 
     if (_shownListType == _UpcomingListType.tasks) {
       title = 'Yaklaşan Görevler';
@@ -597,10 +760,10 @@ class _HomePageState extends State<HomePage> {
           final String startTime = formatter.format(task.startTime!);
           final String endTime = task.endTime != null ? formatter.format(task.endTime!) : 'Belirtilmemiş';
           final difference = task.startTime!.difference(now);
-          final bool showCountdown = difference.isNegative == false && difference.inHours < 24;
+          final bool showCountdown = !difference.isNegative && difference.inHours < 24;
 
           return Card(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withAlpha(204), // withOpacity(0.8)
             child: ListTile(
               title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Column(
@@ -620,8 +783,7 @@ class _HomePageState extends State<HomePage> {
       title = 'Yaklaşan Etkinlikler';
       final now = DateTime.now();
       final upcomingEvents = viewModel.events.where((event) {
-        if (event.startTime == null) return false;
-        final difference = event.startTime!.difference(now).inDays;
+        final difference = event.startTime.difference(now).inDays;
         return difference >= 0 && difference <= 3;
       }).toList();
 
@@ -629,13 +791,13 @@ class _HomePageState extends State<HomePage> {
         items = [const ListTile(title: Text('Yaklaşan etkinlik bulunmamaktadır.', style: TextStyle(color: Colors.white)))];
       } else {
         items = upcomingEvents.map((event) {
-          final String startTime = formatter.format(event.startTime!);
-          final String endTime = event.endTime != null ? formatter.format(event.endTime!) : 'Belirtilmemiş';
-          final difference = event.startTime!.difference(now);
-          final bool showCountdown = difference.isNegative == false && difference.inHours < 24;
+          final String startTime = formatter.format(event.startTime);
+          final String endTime = formatter.format(event.endTime);
+          final difference = event.startTime.difference(now);
+          final bool showCountdown = !difference.isNegative && difference.inHours < 24;
 
           return Card(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withAlpha(204), // withOpacity(0.8)
             child: ListTile(
               title: Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Column(
@@ -658,7 +820,7 @@ class _HomePageState extends State<HomePage> {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.2),
+        color: Colors.black.withAlpha(51), // withOpacity(0.2)
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
@@ -689,7 +851,7 @@ class _HomePageState extends State<HomePage> {
       builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-          backgroundColor: Colors.deepPurple.shade300.withOpacity(0.9),
+          backgroundColor: Colors.deepPurple.shade300.withAlpha(230), // withOpacity(0.9)
           title: const Text('Ne eklemek istersiniz?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -723,9 +885,9 @@ class _HomePageState extends State<HomePage> {
       builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-          backgroundColor: Colors.deepPurple.shade300.withOpacity(0.9),
+          backgroundColor: Colors.deepPurple.shade300.withAlpha(230), // withOpacity(0.9)
           title: const Text('Çıkış Yap', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          content: const Text('Çıkış yapmak istediğinizden emin misiniz?', style: const TextStyle(color: Colors.white)),
+          content: const Text('Çıkış yapmak istediğinizden emin misiniz?', style: TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
@@ -755,6 +917,7 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (request != null) {
+      if (!mounted) return;
       if (request.categoryId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Lütfen bir kategori seçin.')),
@@ -770,7 +933,7 @@ class _HomePageState extends State<HomePage> {
         request.startTime,
         request.endTime,
       );
-
+      if (!mounted) return;
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Görev başarıyla eklendi.'), backgroundColor: Colors.green),
@@ -790,8 +953,9 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (request != null) {
+      if (!mounted) return;
       final success = await viewModel.addEvent(request);
-
+      if (!mounted) return;
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Etkinlik başarıyla eklendi.'), backgroundColor: Colors.green),
@@ -847,16 +1011,14 @@ class _AppointmentDataSource extends CalendarDataSource {
       int categoryIndex = categories.indexWhere((c) => c.id == event.categoryId);
       Color appointmentColor = categoryIndex != -1 ? eventColorPalette[categoryIndex % eventColorPalette.length] : Colors.grey.shade700;
 
-      if (event.startTime != null) {
         appointments.add(Appointment(
-          startTime: event.startTime!,
-          endTime: event.endTime ?? event.startTime!.add(const Duration(hours: 1)),
+          startTime: event.startTime,
+          endTime: event.endTime,
           subject: 'Etkinlik: ${event.title}',
-          notes: event.description ?? '',
+          notes: event.description,
           color: appointmentColor,
           isAllDay: false,
         ));
-      }
     }
 
     this.appointments = appointments;
