@@ -382,7 +382,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 180,
+            height: 200,
             child: PageView.builder(
               controller: PageController(viewportFraction: 0.92),
               itemCount: freeSlots.length,
@@ -423,44 +423,47 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(20.0),
+                          padding: const EdgeInsets.all(16.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Row(
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.all(10),
+                                    padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
                                       color: Colors.white.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: const Icon(
                                       Icons.schedule_rounded,
                                       color: Colors.white,
-                                      size: 24,
+                                      size: 20,
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: 10),
                                   const Expanded(
                                     child: Text(
                                       'Boş Zamanınız Var!',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 20,
+                                        fontSize: 18,
                                         color: Colors.white,
                                         letterSpacing: -0.5,
                                       ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 12),
                               Container(
-                                padding: const EdgeInsets.all(16),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -469,39 +472,43 @@ class _HomePageState extends State<HomePage> {
                                       children: [
                                         Icon(
                                           Icons.access_time_rounded,
-                                          size: 16,
+                                          size: 14,
                                           color: Colors.white.withOpacity(0.9),
                                         ),
-                                        const SizedBox(width: 8),
+                                        const SizedBox(width: 6),
                                         Expanded(
                                           child: Text(
                                             dateFormat.format(startTime),
                                             style: TextStyle(
-                                              fontSize: 14,
+                                              fontSize: 12,
                                               color: Colors.white.withOpacity(0.95),
                                               fontWeight: FontWeight.w600,
                                             ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 6),
                                     Row(
                                       children: [
                                         Icon(
                                           Icons.flag_rounded,
-                                          size: 16,
+                                          size: 14,
                                           color: Colors.white.withOpacity(0.9),
                                         ),
-                                        const SizedBox(width: 8),
+                                        const SizedBox(width: 6),
                                         Expanded(
                                           child: Text(
                                             dateFormat.format(endTime),
                                             style: TextStyle(
-                                              fontSize: 14,
+                                              fontSize: 12,
                                               color: Colors.white.withOpacity(0.95),
                                               fontWeight: FontWeight.w600,
                                             ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       ],
@@ -516,12 +523,12 @@ class _HomePageState extends State<HomePage> {
                                     child: Container(
                                       decoration: BoxDecoration(
                                         color: Colors.white,
-                                        borderRadius: BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(12),
                                         boxShadow: [
                                           BoxShadow(
                                             color: Colors.black.withOpacity(0.1),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 4),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 3),
                                           ),
                                         ],
                                       ),
@@ -529,24 +536,28 @@ class _HomePageState extends State<HomePage> {
                                         color: Colors.transparent,
                                         child: InkWell(
                                           onTap: () => _showAddTaskDialog(context, viewModel, startTime),
-                                          borderRadius: BorderRadius.circular(14),
+                                          borderRadius: BorderRadius.circular(12),
                                           child: Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            padding: const EdgeInsets.symmetric(vertical: 10),
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.center,
+                                              mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Icon(
                                                   Icons.add_task_rounded,
-                                                  size: 18,
+                                                  size: 16,
                                                   color: const Color(0xFF6366F1),
                                                 ),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  'Görev',
-                                                  style: TextStyle(
-                                                    color: const Color(0xFF6366F1),
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 14,
+                                                const SizedBox(width: 6),
+                                                Flexible(
+                                                  child: Text(
+                                                    'Görev',
+                                                    style: TextStyle(
+                                                      color: const Color(0xFF6366F1),
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 13,
+                                                    ),
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                               ],
@@ -556,17 +567,17 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: 10),
                                   Expanded(
                                     child: Container(
                                       decoration: BoxDecoration(
                                         color: Colors.white,
-                                        borderRadius: BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(12),
                                         boxShadow: [
                                           BoxShadow(
                                             color: Colors.black.withOpacity(0.1),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 4),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 3),
                                           ),
                                         ],
                                       ),
@@ -574,24 +585,28 @@ class _HomePageState extends State<HomePage> {
                                         color: Colors.transparent,
                                         child: InkWell(
                                           onTap: () => _showAddEventDialog(context, viewModel, startTime),
-                                          borderRadius: BorderRadius.circular(14),
+                                          borderRadius: BorderRadius.circular(12),
                                           child: Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            padding: const EdgeInsets.symmetric(vertical: 10),
                                             child: Row(
                                               mainAxisAlignment: MainAxisAlignment.center,
+                                              mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Icon(
                                                   Icons.event_available_rounded,
-                                                  size: 18,
+                                                  size: 16,
                                                   color: const Color(0xFF6366F1),
                                                 ),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  'Etkinlik',
-                                                  style: TextStyle(
-                                                    color: const Color(0xFF6366F1),
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 14,
+                                                const SizedBox(width: 6),
+                                                Flexible(
+                                                  child: Text(
+                                                    'Etkinlik',
+                                                    style: TextStyle(
+                                                      color: const Color(0xFF6366F1),
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 13,
+                                                    ),
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                               ],
@@ -676,95 +691,165 @@ class _HomePageState extends State<HomePage> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
-                child: SfCalendar(
-                controller: _calendarController,
-                dataSource: dataSource,
-                firstDayOfWeek: viewModel.userSettings?.startDayOfWeek == 'SUNDAY' ? 7 : 1,
-                backgroundColor: Colors.transparent,
-                todayTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                todayHighlightColor: Colors.blue,
-                headerStyle: const CalendarHeaderStyle(
-                  textStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
-                  backgroundColor: Colors.transparent,
-                ),
-                viewHeaderStyle: const ViewHeaderStyle(
-                  dayTextStyle: TextStyle(color: Colors.black, fontSize: 14),
-                  dateTextStyle: TextStyle(color: Colors.black, fontSize: 14),
-                ),
-                monthViewSettings: const MonthViewSettings(
-                  appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
-                  showAgenda: true,
-                  monthCellStyle: MonthCellStyle(
-                    textStyle: TextStyle(color: Colors.black),
-                    trailingDatesTextStyle: TextStyle(color: Colors.grey),
-                    leadingDatesTextStyle: TextStyle(color: Colors.grey),
-                    todayBackgroundColor: Colors.blue,
-                    backgroundColor: Colors.transparent,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white,
+                        Colors.grey.shade50,
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
                   ),
-                ),
-                scheduleViewSettings: const ScheduleViewSettings(
-                  appointmentItemHeight: 70,
-                  monthHeaderSettings: MonthHeaderSettings(
-                    height: 100,
-                    textAlign: TextAlign.left,
+                  child: SfCalendar(
+                    controller: _calendarController,
+                    dataSource: dataSource,
+                    firstDayOfWeek: viewModel.userSettings?.startDayOfWeek == 'SUNDAY' ? 7 : 1,
                     backgroundColor: Colors.transparent,
-                    monthFormat: 'MMMM, yyyy',
-                    monthTextStyle: TextStyle(
-                        color: Colors.black,
-                        fontSize: 25,
-                        fontWeight: FontWeight.w500),
-                  ),
-                  weekHeaderSettings: WeekHeaderSettings(
-                    weekTextStyle: TextStyle(
-                        color: Colors.black,
+                    todayTextStyle: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    todayHighlightColor: const Color(0xFF6366F1),
+                    headerStyle: const CalendarHeaderStyle(
+                      textStyle: TextStyle(
+                        color: Color(0xFF1F2937),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
+                      backgroundColor: Colors.transparent,
+                    ),
+                    viewHeaderStyle: ViewHeaderStyle(
+                      dayTextStyle: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                      dateTextStyle: TextStyle(
+                        color: Colors.grey.shade800,
                         fontSize: 15,
-                        fontWeight: FontWeight.w500),
-                  ),
-                  dayHeaderSettings: DayHeaderSettings(
-                    dayFormat: 'EEEE',
-                    width: 70,
-                    dayTextStyle: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.black),
-                    dateTextStyle: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.black),
-                  ),
-                ),
-                selectionDecoration: BoxDecoration(
-                  color: Colors.blue.withAlpha(77), // withOpacity(0.3)
-                  border: Border.all(color: Colors.blue, width: 2),
-                  borderRadius: const BorderRadius.all(Radius.circular(50)),
-                  shape: BoxShape.rectangle,
-                ),
-                onTap: (CalendarTapDetails details) {
-                  if (details.targetElement == CalendarElement.calendarCell) {
-                    if (viewModel.categories.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Row(
-                            children: [
-                              Icon(Icons.info_outline, color: Colors.white),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: Text('Lütfen önce bir kategori oluşturun.'),
-                              ),
-                            ],
-                          ),
-                          backgroundColor: Colors.orange,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                        fontWeight: FontWeight.w600,
+                      ),
+                      backgroundColor: Colors.grey.shade50,
+                    ),
+                    monthViewSettings: MonthViewSettings(
+                      appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+                      showAgenda: true,
+                      agendaViewHeight: 150,
+                      agendaStyle: AgendaStyle(
+                        backgroundColor: Colors.transparent,
+                        appointmentTextStyle: const TextStyle(
+                          color: Color(0xFF1F2937),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
                         ),
-                      );
-                    } else {
-                      _showAddDialog(context, viewModel, details.date);
-                    }
-                  }
-                },
+                        dateTextStyle: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      monthCellStyle: MonthCellStyle(
+                        textStyle: const TextStyle(
+                          color: Color(0xFF1F2937),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        trailingDatesTextStyle: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 14,
+                        ),
+                        leadingDatesTextStyle: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 14,
+                        ),
+                        todayBackgroundColor: const Color(0xFF6366F1),
+                        backgroundColor: Colors.transparent,
+                      ),
+                    ),
+                    scheduleViewSettings: ScheduleViewSettings(
+                      appointmentItemHeight: 75,
+                      monthHeaderSettings: MonthHeaderSettings(
+                        height: 110,
+                        textAlign: TextAlign.left,
+                        backgroundColor: Colors.transparent,
+                        monthFormat: 'MMMM yyyy',
+                        monthTextStyle: const TextStyle(
+                          color: Color(0xFF1F2937),
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      weekHeaderSettings: WeekHeaderSettings(
+                        weekTextStyle: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        backgroundColor: Colors.grey.shade50,
+                      ),
+                      dayHeaderSettings: DayHeaderSettings(
+                        dayFormat: 'EEEE',
+                        width: 75,
+                        dayTextStyle: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade600,
+                          letterSpacing: 0.5,
+                        ),
+                        dateTextStyle: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                    ),
+                    selectionDecoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF6366F1).withOpacity(0.2),
+                          const Color(0xFF8B5CF6).withOpacity(0.2),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: const Color(0xFF6366F1),
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      shape: BoxShape.rectangle,
+                    ),
+                    onTap: (CalendarTapDetails details) {
+                      if (details.targetElement == CalendarElement.calendarCell) {
+                        if (viewModel.categories.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Row(
+                                children: [
+                                  Icon(Icons.info_outline, color: Colors.white),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text('Lütfen önce bir kategori oluşturun.'),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: Colors.orange,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          );
+                        } else {
+                          _showAddDialog(context, viewModel, details.date);
+                        }
+                      }
+                    },
+                  ),
                 ),
               ),
             ),
