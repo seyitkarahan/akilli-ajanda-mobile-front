@@ -31,7 +31,7 @@ class EventResponse {
       description: json['description'],
       startTime: DateTime.parse(json['startTime']),
       endTime: DateTime.parse(json['endTime']),
-      location: json['location'],
+      location: json['location'] ?? '',
       userId: json['userId'],
       categoryId: json['categoryId'],
       latitude: json['latitude']?.toDouble(),

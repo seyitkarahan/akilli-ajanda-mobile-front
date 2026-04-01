@@ -15,6 +15,7 @@ import 'package:akilli_ajanda_front/view/login_view.dart';
 import 'package:akilli_ajanda_front/view/map_view.dart';
 import 'package:akilli_ajanda_front/view/settings_view.dart';
 import 'package:akilli_ajanda_front/view/statistics_view.dart';
+import 'package:akilli_ajanda_front/view/chatbot_bottom_sheet.dart';
 import 'package:akilli_ajanda_front/view/task_dialog.dart';
 import 'package:akilli_ajanda_front/view/task_notification_page.dart';
 import 'package:akilli_ajanda_front/view/tasks_view.dart';
@@ -89,17 +90,22 @@ class _HomePageState extends State<HomePage> {
             extendBodyBehindAppBar: true,
             appBar: _buildAppBar(context, viewModel),
             drawer: _buildDrawer(context, viewModel),
-            body: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.deepPurple.shade300, Colors.blue.shade400],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+            body: Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.deepPurple.shade300, Colors.blue.shade400],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                  child: SafeArea(
+                    child: _buildPage(_selectedIndex, viewModel),
+                  ),
                 ),
-              ),
-              child: SafeArea(
-                child: _buildPage(_selectedIndex, viewModel),
-              ),
+                if (_selectedIndex == 0) _buildChatbotButton(context, viewModel),
+              ],
             ),
             bottomNavigationBar: Container(
               decoration: BoxDecoration(
@@ -991,6 +997,35 @@ class _HomePageState extends State<HomePage> {
             ),
             _buildUpcomingList(viewModel),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatbotButton(BuildContext context, HomeViewModel viewModel) {
+    return Positioned(
+      right: 16,
+      bottom: 100,
+      child: Material(
+        elevation: 6,
+        borderRadius: BorderRadius.circular(28),
+        color: Colors.white,
+        child: InkWell(
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (ctx) => ChatbotBottomSheet(
+                onDataChanged: () => viewModel.fetchInitialData(),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(28),
+          child: const Padding(
+            padding: EdgeInsets.all(14),
+            child: Icon(Icons.chat_rounded, color: Color(0xFF6366F1), size: 28),
+          ),
         ),
       ),
     );

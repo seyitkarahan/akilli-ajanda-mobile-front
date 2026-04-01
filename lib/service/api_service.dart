@@ -14,6 +14,8 @@ import '../model/user_settings_request.dart';
 import '../model/user_settings_response.dart';
 import '../model/task_request.dart';
 import '../model/task_response.dart';
+import '../model/chat_request.dart';
+import '../model/chat_response.dart';
 import '../model/notification_request.dart';
 import '../model/notification_response.dart';
 import 'storage_service.dart';
@@ -270,5 +272,19 @@ class ApiService {
     if (response.statusCode != 204) {
       print('Delete Event failed: ${response.body}');
     }
+  }
+
+  // --- Chatbot (Ollama) ---
+  Future<ChatResponse?> chat(ChatRequest request) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/chat'),
+      headers: await _getHeaders(),
+      body: jsonEncode(request.toJson()),
+    );
+    if (response.statusCode == 200) {
+      return ChatResponse.fromJson(jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>);
+    }
+    print('Chat failed: ${response.body}');
+    return null;
   }
 }
