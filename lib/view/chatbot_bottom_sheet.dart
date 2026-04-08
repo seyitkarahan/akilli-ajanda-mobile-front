@@ -59,23 +59,22 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
       if (response.createdTask != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Görev eklendi: ${response.createdTask!.title}'),
+            content: Text('Görev: ${response.createdTask!.title}'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
         );
-        widget.onDataChanged?.call();
       }
       if (response.createdEvent != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Etkinlik eklendi: ${response.createdEvent!.title}'),
+            content: Text('Etkinlik: ${response.createdEvent!.title}'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
         );
-        widget.onDataChanged?.call();
       }
+      _notifyDataChangedIfNeeded(response);
     } else {
       setState(() {
         _messages.add(ChatMessage(
@@ -85,6 +84,18 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
       });
     }
     _scrollToBottom();
+  }
+
+  /// Backend listedTasks/listedEvents döndüğünde veya görev/etkinlik CRUD sonrası ana ekranı yenile.
+  /// Silme işleminde DTO gelmeyebilir; metinde "silindi" geçerse de yenileriz.
+  void _notifyDataChangedIfNeeded(ChatResponse response) {
+    final text = response.response.toLowerCase();
+    final listQuery = response.listedTasks != null || response.listedEvents != null;
+    final hadCrud = response.createdTask != null || response.createdEvent != null;
+    final likelyDelete = text.contains('silindi');
+    if (hadCrud || listQuery || likelyDelete) {
+      widget.onDataChanged?.call();
+    }
   }
 
   void _scrollToBottom() {

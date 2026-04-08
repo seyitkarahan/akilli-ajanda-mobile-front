@@ -5,11 +5,15 @@ class ChatResponse {
   final String response;
   final TaskResponse? createdTask;
   final EventResponse? createdEvent;
+  final List<TaskResponse>? listedTasks;
+  final List<EventResponse>? listedEvents;
 
   ChatResponse({
     required this.response,
     this.createdTask,
     this.createdEvent,
+    this.listedTasks,
+    this.listedEvents,
   });
 
   factory ChatResponse.fromJson(Map<String, dynamic> json) {
@@ -20,6 +24,16 @@ class ChatResponse {
           : null,
       createdEvent: json['createdEvent'] != null
           ? EventResponse.fromJson(json['createdEvent'] as Map<String, dynamic>)
+          : null,
+      listedTasks: json['listedTasks'] != null
+          ? (json['listedTasks'] as List<dynamic>)
+              .map((e) => TaskResponse.fromJson(e as Map<String, dynamic>))
+              .toList()
+          : null,
+      listedEvents: json['listedEvents'] != null
+          ? (json['listedEvents'] as List<dynamic>)
+              .map((e) => EventResponse.fromJson(e as Map<String, dynamic>))
+              .toList()
           : null,
     );
   }
