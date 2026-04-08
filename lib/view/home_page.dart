@@ -51,6 +51,324 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   bool _showSmartSuggestions = false;
 
+  Color _taskStatusColor(TaskStatus status) {
+    switch (status) {
+      case TaskStatus.PENDING:
+        return const Color(0xFFF59E0B);
+      case TaskStatus.IN_PROGRESS:
+        return const Color(0xFF3B82F6);
+      case TaskStatus.COMPLETED:
+        return const Color(0xFF10B981);
+      case TaskStatus.MISSED:
+        return const Color(0xFFEF4444);
+      case TaskStatus.CANCELLED:
+        return const Color(0xFF6B7280);
+    }
+  }
+
+  void _showTaskDetailDialog(BuildContext context, TaskResponse task) {
+    final DateFormat dateFormatter = DateFormat('dd MMMM yyyy', 'tr_TR');
+    final DateFormat timeFormatter =
+        DateFormat((_viewModel.userSettings?.is24HourFormat ?? true) ? 'HH:mm' : 'hh:mm a', 'tr_TR');
+    final statusColor = _taskStatusColor(task.status);
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [statusColor, statusColor.withOpacity(0.8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(28),
+                      topRight: Radius.circular(28),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.task_alt_rounded, color: Colors.white, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          task.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.white),
+                        onPressed: () => Navigator.pop(dialogContext),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if ((task.description ?? '').trim().isNotEmpty) ...[
+                          _buildDetailRow(Icons.description_rounded, 'Açıklama', task.description!.trim()),
+                          const SizedBox(height: 14),
+                        ],
+                        _buildDetailRow(Icons.info_outline_rounded, 'Durum', task.status.name),
+                        if (task.startTime != null) ...[
+                          const SizedBox(height: 14),
+                          _buildDetailRow(
+                            Icons.play_circle_rounded,
+                            'Başlangıç',
+                            '${dateFormatter.format(task.startTime!)} ${timeFormatter.format(task.startTime!)}',
+                          ),
+                        ],
+                        if (task.endTime != null) ...[
+                          const SizedBox(height: 14),
+                          _buildDetailRow(
+                            Icons.flag_rounded,
+                            'Bitiş',
+                            '${dateFormatter.format(task.endTime!)} ${timeFormatter.format(task.endTime!)}',
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEventDetailDialog(BuildContext context, EventResponse event) {
+    final DateFormat dateFormatter = DateFormat('dd MMMM yyyy', 'tr_TR');
+    final DateFormat timeFormatter =
+        DateFormat((_viewModel.userSettings?.is24HourFormat ?? true) ? 'HH:mm' : 'hh:mm a', 'tr_TR');
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(28),
+                      topRight: Radius.circular(28),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.event_rounded, color: Colors.white, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          event.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.white),
+                        onPressed: () => Navigator.pop(dialogContext),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (event.description.trim().isNotEmpty) ...[
+                          _buildDetailRow(Icons.description_rounded, 'Açıklama', event.description.trim()),
+                          const SizedBox(height: 14),
+                        ],
+                        _buildDetailRow(
+                          Icons.location_on_rounded,
+                          'Konum',
+                          event.location.trim().isNotEmpty ? event.location.trim() : 'Belirtilmemiş',
+                        ),
+                        const SizedBox(height: 14),
+                        _buildDetailRow(
+                          Icons.play_circle_rounded,
+                          'Başlangıç',
+                          '${dateFormatter.format(event.startTime)} ${timeFormatter.format(event.startTime)}',
+                        ),
+                        const SizedBox(height: 14),
+                        _buildDetailRow(
+                          Icons.stop_circle_rounded,
+                          'Bitiş',
+                          '${dateFormatter.format(event.endTime)} ${timeFormatter.format(event.endTime)}',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, size: 18, color: const Color(0xFF6366F1)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: Color(0xFF1F2937),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openCalendarAppointmentDetails(HomeViewModel viewModel, Appointment appointment) {
+    final dynamic rawId = appointment.id;
+    if (rawId is! String) return;
+
+    if (rawId.startsWith('task:')) {
+      final int? taskId = int.tryParse(rawId.substring('task:'.length));
+      if (taskId == null) return;
+      TaskResponse? task;
+      for (final t in viewModel.tasks) {
+        if (t.id == taskId) {
+          task = t;
+          break;
+        }
+      }
+      if (task != null) {
+        _showTaskDetailDialog(context, task);
+      }
+      return;
+    }
+
+    if (rawId.startsWith('event:')) {
+      final int? eventId = int.tryParse(rawId.substring('event:'.length));
+      if (eventId == null) return;
+      EventResponse? event;
+      for (final e in viewModel.events) {
+        if (e.id == eventId) {
+          event = e;
+          break;
+        }
+      }
+      if (event != null) {
+        _showEventDetailDialog(context, event);
+      }
+      return;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -830,6 +1148,15 @@ class _HomePageState extends State<HomePage> {
                       shape: BoxShape.rectangle,
                     ),
                     onTap: (CalendarTapDetails details) {
+                      if (details.targetElement == CalendarElement.appointment ||
+                          details.targetElement == CalendarElement.agenda) {
+                        final appointments = details.appointments;
+                        if (appointments != null && appointments.isNotEmpty && appointments.first is Appointment) {
+                          _openCalendarAppointmentDetails(viewModel, appointments.first as Appointment);
+                        }
+                        return;
+                      }
+
                       if (details.targetElement == CalendarElement.calendarCell) {
                         if (viewModel.categories.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -1428,6 +1755,7 @@ class _HomePageState extends State<HomePage> {
             ),
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              onTap: () => _showTaskDetailDialog(context, task),
               leading: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -1553,6 +1881,7 @@ class _HomePageState extends State<HomePage> {
             ),
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              onTap: () => _showEventDetailDialog(context, event),
               leading: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -2085,6 +2414,7 @@ class _AppointmentDataSource extends CalendarDataSource {
 
       if (task.startTime != null) {
         appointments.add(Appointment(
+          id: 'task:${task.id}',
           startTime: task.startTime!,
           endTime: task.endTime ?? task.startTime!.add(const Duration(hours: 1)),
           subject: 'Görev: ${task.title}',
@@ -2100,6 +2430,7 @@ class _AppointmentDataSource extends CalendarDataSource {
       Color appointmentColor = categoryIndex != -1 ? eventColorPalette[categoryIndex % eventColorPalette.length] : Colors.grey.shade700;
 
         appointments.add(Appointment(
+          id: 'event:${event.id}',
           startTime: event.startTime,
           endTime: event.endTime,
           subject: 'Etkinlik: ${event.title}',
