@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:akilli_ajanda_front/model/event_response.dart';
 import 'package:akilli_ajanda_front/view_model/home_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
@@ -19,6 +20,7 @@ class MapView extends StatefulWidget {
 class _MapViewState extends State<MapView> {
   final Set<Marker> _markers = {};
   bool _isLoading = true;
+  bool _myLocationEnabled = false;
   GoogleMapController? _mapController;
   EventResponse? _selectedEvent;
   bool _showEventList = false;
@@ -27,7 +29,37 @@ class _MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
-    _createCustomMarkers();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeMap();
+    });
+  }
+
+  Future<void> _initializeMap() async {
+    try {
+      // Keep map data fresh when opening from drawer.
+      await widget.viewModel.fetchInitialData();
+      _myLocationEnabled = await _hasLocationPermission();
+      await _createCustomMarkers();
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<bool> _hasLocationPermission() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return false;
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    return permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse;
   }
 
   Future<BitmapDescriptor> _createCustomMarkerBitmap(String title, Color color) async {
@@ -68,11 +100,18 @@ class _MapViewState extends State<MapView> {
     return BitmapDescriptor.fromBytes(data!.buffer.asUint8List());
   }
 
-  void _createCustomMarkers() async {
+  Future<void> _createCustomMarkers() async {
+    _markers.clear();
     _eventsWithLocation.clear();
     _eventsWithLocation.addAll(
       widget.viewModel.events
-          .where((event) => event.latitude != null && event.longitude != null)
+          .where(
+            (event) =>
+                event.latitude != null &&
+                event.longitude != null &&
+                event.latitude!.isFinite &&
+                event.longitude!.isFinite,
+          )
           .toList(),
     );
 
@@ -209,8 +248,8 @@ class _MapViewState extends State<MapView> {
                             zoom: _markers.isNotEmpty ? 10.0 : 5.0,
                           ),
                           markers: _markers,
-                          myLocationButtonEnabled: true,
-                          myLocationEnabled: true,
+                          myLocationButtonEnabled: _myLocationEnabled,
+                          myLocationEnabled: _myLocationEnabled,
                           mapType: MapType.normal,
                           zoomControlsEnabled: false,
                         ),
