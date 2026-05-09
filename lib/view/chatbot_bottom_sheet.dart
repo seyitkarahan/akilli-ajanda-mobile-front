@@ -1,4 +1,9 @@
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import '../model/chat_request.dart';
 import '../model/chat_response.dart';
 import '../service/api_service.dart';
@@ -17,7 +22,18 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ApiService _api = ApiService();
+  final SpeechToText _speechToText = SpeechToText();
+  final FlutterTts _flutterTts = FlutterTts();
   bool _loading = false;
+  bool _speechAvailable = false;
+  bool _isListening = false;
+  /// Parmak mikrofondaysa; motor erken `notListening` verse bile görünür durumu bozmamak için.
+  bool _micPointerDown = false;
+  bool _voiceResponseEnabled = true;
+
+  /// Sesli giriş ve TTS yalnızca Android’de (iOS’ta Info.plist / hedef yok).
+  static bool get _androidVoice =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   @override
   void initState() {
@@ -26,13 +42,112 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
       text: 'Merhaba! Bugünkü görev ve etkinliklerinizi sorabilir veya doğal dille yeni ekleyebilirsiniz. Örn: "Yarın saat 15:00\'da toplantı ekle"',
       isUser: false,
     ));
+    _initVoice();
   }
 
   @override
   void dispose() {
+    if (_androidVoice) {
+      _speechToText.stop();
+      _flutterTts.stop();
+    }
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _initVoice() async {
+    if (!_androidVoice) {
+      if (!mounted) return;
+      setState(() => _speechAvailable = false);
+      return;
+    }
+
+    final available = await _speechToText.initialize(
+      onStatus: (status) {
+        if (!mounted) return;
+        if (status == 'done' || status == 'notListening') {
+          if (!_micPointerDown) setState(() => _isListening = false);
+        }
+      },
+      onError: (_) {
+        if (!mounted) return;
+        setState(() => _isListening = false);
+      },
+    );
+
+    await _flutterTts.setLanguage('tr-TR');
+    await _flutterTts.setSpeechRate(0.48);
+    await _flutterTts.setPitch(1.0);
+
+    if (!mounted) return;
+    setState(() => _speechAvailable = available);
+  }
+
+  Future<void> _micPressStart() async {
+    if (_loading || _isListening) return;
+    if (!_speechAvailable) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sesli giriş kullanılamıyor. Mikrofon iznini kontrol edin.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _micPointerDown = true);
+    await _flutterTts.stop();
+    final started = await _speechToText.listen(
+      localeId: 'tr_TR',
+      onResult: _onSpeechResult,
+      listenMode: ListenMode.dictation,
+      partialResults: true,
+      pauseFor: const Duration(seconds: 10),
+      listenFor: const Duration(minutes: 2),
+    );
+
+    if (!mounted) return;
+    if (!_micPointerDown) {
+      await _speechToText.stop();
+      setState(() => _isListening = false);
+      return;
+    }
+    setState(() => _isListening = started);
+    if (!started) setState(() => _micPointerDown = false);
+  }
+
+  Future<void> _micPressEnd() async {
+    if (!_micPointerDown && !_isListening) return;
+
+    setState(() => _micPointerDown = false);
+    await _speechToText.stop();
+
+    if (!mounted) return;
+    setState(() => _isListening = false);
+
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    if (!mounted || _loading) return;
+
+    final text = _controller.text.trim();
+    if (text.isNotEmpty) await _send();
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    if (!mounted) return;
+    setState(() {
+      _controller.text = result.recognizedWords;
+      _controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: _controller.text.length),
+      );
+    });
+  }
+
+  Future<void> _speak(String text) async {
+    if (!_androidVoice || !_voiceResponseEnabled || text.trim().isEmpty) return;
+    await _flutterTts.stop();
+    await _flutterTts.speak(text);
   }
 
   Future<void> _send() async {
@@ -74,6 +189,7 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
           ),
         );
       }
+      _speak(response.response);
       _notifyDataChangedIfNeeded(response);
     } else {
       setState(() {
@@ -136,20 +252,44 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 24),
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'Ajanda Asistanı',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                const Expanded(
+                  child: Text(
+                    'Ajanda Asistanı',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
+                if (_androidVoice) ...[
+                  Tooltip(
+                    message: _voiceResponseEnabled
+                        ? 'Sesli cevap açık — kapatmak için dokunun'
+                        : 'Sesli cevap kapalı — açmak için dokunun',
+                    child: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _voiceResponseEnabled = !_voiceResponseEnabled;
+                          if (!_voiceResponseEnabled) _flutterTts.stop();
+                        });
+                      },
+                      icon: Icon(
+                        _voiceResponseEnabled
+                            ? Icons.record_voice_over_rounded
+                            : Icons.voice_over_off_rounded,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                ],
               ],
             ),
           ),
@@ -190,10 +330,10 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (!msg.isUser)
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 16,
-                          backgroundColor: const Color(0xFF6366F1),
-                          child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 18),
+                          backgroundColor: Color(0xFF6366F1),
+                          child: Icon(Icons.smart_toy_rounded, color: Colors.white, size: 18),
                         ),
                       if (!msg.isUser) const SizedBox(width: 8),
                       Flexible(
@@ -239,6 +379,39 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
             ),
             child: Row(
               children: [
+                if (_androidVoice) ...[
+                  Tooltip(
+                    message: _speechAvailable
+                        ? 'Basılı tutun, konuşun, bırakınca gönderilir'
+                        : 'Sesli giriş kullanılamıyor',
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTapDown:
+                          _loading || !_speechAvailable ? null : (_) => _micPressStart(),
+                      onTapUp:
+                          _loading || !_speechAvailable ? null : (_) => _micPressEnd(),
+                      onTapCancel: _loading || !_speechAvailable
+                          ? null
+                          : () => _micPressEnd(),
+                      child: Material(
+                        color: _isListening
+                            ? const Color(0xFFE11D48)
+                            : (_speechAvailable && !_loading
+                                ? Colors.white
+                                : Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(24),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Icon(
+                            _isListening ? Icons.mic : Icons.mic_none_rounded,
+                            color: _isListening ? Colors.white : const Color(0xFF6366F1),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 Expanded(
                   child: TextField(
                     controller: _controller,
